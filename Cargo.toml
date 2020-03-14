@@ -1,0 +1,10 @@
+[package]
+name = "rtnw"
+version = "0.1.0"
+authors = ["ishanjain28 <ishanjain28@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+sdl2 = "0.33.0"
+rand = "0.7.3"
+rayon = "1.3.0"
