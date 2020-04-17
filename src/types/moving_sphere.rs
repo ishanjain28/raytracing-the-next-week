@@ -1,22 +1,22 @@
 use crate::types::{HitRecord, Hitable, Material, Ray, Vec3};
 
-pub struct MovingSphere {
-    radius: f32,
+pub struct MovingSphere<T: Material + Sized> {
+    radius: f64,
     center_start: Vec3,
     center_end: Vec3,
-    time_start: f32,
-    time_end: f32,
-    material: Box<dyn Material>,
+    time_start: f64,
+    time_end: f64,
+    material: T,
 }
 
-impl MovingSphere {
+impl<T: Material + Sized> MovingSphere<T> {
     pub fn new(
         center_start: Vec3,
         center_end: Vec3,
-        time_start: f32,
-        time_end: f32,
-        radius: f32,
-        material: Box<dyn Material>,
+        time_start: f64,
+        time_end: f64,
+        radius: f64,
+        material: T,
     ) -> Self {
         Self {
             center_start,
@@ -28,15 +28,15 @@ impl MovingSphere {
         }
     }
 
-    fn center(&self, time: f32) -> Vec3 {
+    fn center(&self, time: f64) -> Vec3 {
         self.center_start
             + (self.center_end - self.center_start)
                 * ((time - self.time_start) / (self.time_end - self.time_start))
     }
 }
 
-impl Hitable for MovingSphere {
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+impl<T: Material + Sized> Hitable for MovingSphere<T> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin() - self.center(ray.time());
         let a = ray.direction().dot(&ray.direction());
         let b = oc.dot(&ray.direction());

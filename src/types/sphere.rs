@@ -1,13 +1,13 @@
 use crate::types::{HitRecord, Hitable, Material, Ray, Vec3};
 
-pub struct Sphere {
+pub struct Sphere<T: Material + Sized> {
     center: Vec3,
-    radius: f32,
-    material: Box<dyn Material>,
+    radius: f64,
+    material: T,
 }
 
-impl Sphere {
-    pub fn new(center: Vec3, radius: f32, material: Box<dyn Material>) -> Self {
+impl<T: Material + Sized> Sphere<T> {
+    pub fn new(center: Vec3, radius: f64, material: T) -> Self {
         Self {
             center,
             radius,
@@ -16,8 +16,8 @@ impl Sphere {
     }
 }
 
-impl Hitable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+impl<T: Material + Sized> Hitable for Sphere<T> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin() - self.center;
         let a = ray.direction().dot(&ray.direction());
         let b = oc.dot(&ray.direction());
