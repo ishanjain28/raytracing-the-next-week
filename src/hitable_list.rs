@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{demo::ParallelHit, types::Ray, HitRecord, Hitable};
+use crate::{demo::ParallelHit, types::Ray, Aabb, HitRecord, Hitable};
 
 pub struct HitableList {
     pub list: Vec<Arc<dyn ParallelHit>>,
@@ -17,6 +17,28 @@ impl Hitable for HitableList {
             }
         }
         hit_rec
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<Aabb> {
+        if self.list.is_empty() {
+            return None;
+        }
+
+        let mut output_box = None;
+
+        for obj in self.list.iter() {
+            if let Some(bbox) = obj.bounding_box(t0, t1) {
+                if let Some(ref mut opbox) = output_box {
+                    *opbox = Aabb::surrounding_box(*opbox, bbox);
+                } else {
+                    output_box = Some(bbox);
+                }
+            } else {
+                return output_box;
+            }
+        }
+
+        output_box
     }
 }
 

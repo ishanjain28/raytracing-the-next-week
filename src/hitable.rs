@@ -1,4 +1,9 @@
-use crate::types::{Material, Ray, Vec3};
+use std::sync::Arc;
+
+use crate::{
+    types::{Material, Ray, Vec3},
+    Aabb,
+};
 
 pub struct HitRecord<'a> {
     ///  Rays are represented by A + t * B
@@ -22,7 +27,16 @@ pub struct HitRecord<'a> {
 }
 
 pub trait Hitable {
-    fn hit(&self, _ray: &Ray, _t_min: f64, _t_max: f64) -> Option<HitRecord> {
-        None
+    fn hit(&self, _ray: &Ray, _t_min: f64, _t_max: f64) -> Option<HitRecord>;
+
+    fn bounding_box(&self, _t0: f64, _t1: f64) -> Option<Aabb>;
+}
+
+impl<T: Hitable + ?Sized> Hitable for Arc<T> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        self.as_ref().hit(ray, t_min, t_max)
+    }
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<Aabb> {
+        self.as_ref().bounding_box(t0, t1)
     }
 }

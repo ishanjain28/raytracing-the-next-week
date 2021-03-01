@@ -1,10 +1,12 @@
+use crate::BvhNode;
+
 use {
     crate::{
         types::{
             material::{Dielectric, Lambertian, Metal},
             MovingSphere, Ray, Sphere, Vec3,
         },
-        Camera, Hitable, HitableList, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
+        Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
     },
     rand::{rngs::SmallRng, Rng, SeedableRng},
     rayon::prelude::*,
@@ -49,9 +51,7 @@ impl Demo {
     }
 
     fn world(&self) -> impl Hitable {
-        let mut world = HitableList {
-            list: Vec::with_capacity(500),
-        };
+        let mut world: Vec<Arc<dyn ParallelHit>> = Vec::with_capacity(500);
 
         let mut rng = rand::thread_rng();
         let mut rng = SmallRng::from_rng(&mut rng).unwrap();
@@ -125,7 +125,7 @@ impl Demo {
             Metal::with_fuzz(Vec3::new(0.7, 0.6, 0.5), 0.0),
         )));
 
-        world
+        BvhNode::new(&mut rng, &mut world, 0.0, 1.0)
     }
 
     fn camera(&self, aspect_ratio: f64) -> Camera {

@@ -1,6 +1,6 @@
 use crate::{
     types::{Material, Ray, Vec3},
-    HitRecord, Hitable,
+    Aabb, HitRecord, Hitable,
 };
 
 pub struct MovingSphere<T: Material + Sized> {
@@ -71,5 +71,13 @@ impl<T: Material + Sized> Hitable for MovingSphere<T> {
             }
         }
         None
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<Aabb> {
+        let radius = Vec3::new(self.radius, self.radius, self.radius);
+        let box_smol = Aabb::new(self.center(t0) - radius, self.center(t0) + radius);
+        let box_big = Aabb::new(self.center(t1) - radius, self.center(t1) + radius);
+
+        Some(Aabb::surrounding_box(box_smol, box_big))
     }
 }
