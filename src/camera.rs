@@ -71,7 +71,7 @@ impl Camera {
     pub fn get_ray<R: Rng + ?Sized>(&self, u: f64, v: f64, rng: &mut R) -> Ray {
         let rd = random_in_unit_disk(rng) * self.lens_radius;
         let offset = self.u * rd.x() + self.v * rd.y();
-        let time = self.shutter_open + rng.gen::<f64>() * (self.shutter_close - self.shutter_open);
+        let time = rng.gen_range(self.shutter_open..=self.shutter_close);
         Ray::new(
             self.origin + offset,
             self.lower_left_corner + self.horizontal * u + self.vertical * v - self.origin - offset,

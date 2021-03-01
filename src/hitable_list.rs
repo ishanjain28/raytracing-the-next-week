@@ -1,7 +1,9 @@
-use crate::types::{HitRecord, Hitable, Ray};
+use std::sync::Arc;
+
+use crate::{demo::ParallelHit, types::Ray, HitRecord, Hitable};
 
 pub struct HitableList {
-    pub list: Vec<Box<dyn Hitable>>,
+    pub list: Vec<Arc<dyn ParallelHit>>,
 }
 
 impl Hitable for HitableList {
@@ -19,7 +21,7 @@ impl Hitable for HitableList {
 }
 
 impl HitableList {
-    pub fn push(&mut self, obj: Box<dyn Hitable>) {
+    pub fn push(&mut self, obj: Arc<dyn ParallelHit>) {
         self.list.push(obj);
     }
 }

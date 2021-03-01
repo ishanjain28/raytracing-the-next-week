@@ -1,5 +1,8 @@
 use {
-    crate::types::{HitRecord, Ray, Vec3},
+    crate::{
+        types::{Ray, Vec3},
+        HitRecord,
+    },
     rand::{rngs::SmallRng, Rng},
 };
 

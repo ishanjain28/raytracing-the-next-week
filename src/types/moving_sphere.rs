@@ -1,4 +1,7 @@
-use crate::types::{HitRecord, Hitable, Material, Ray, Vec3};
+use crate::{
+    types::{Material, Ray, Vec3},
+    HitRecord, Hitable,
+};
 
 pub struct MovingSphere<T: Material + Sized> {
     radius: f64,

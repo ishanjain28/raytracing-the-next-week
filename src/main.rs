@@ -1,20 +1,22 @@
 #![allow(clippy::suspicious_arithmetic_impl)]
-#![feature(test)]
-extern crate test;
 
 mod camera;
 mod demo;
+mod hitable;
+mod hitable_list;
 mod types;
 
 pub use camera::Camera;
 
+pub use hitable::{HitRecord, Hitable};
+pub use hitable_list::HitableList;
 use std::time::Instant;
 
-const NUM_SAMPLES: u8 = 100;
+const NUM_SAMPLES: u8 = 5;
 const VERTICAL_PARTITION: usize = 8;
 const HORIZONTAL_PARTITION: usize = 8;
-const WIDTH: usize = 800;
-const HEIGHT: usize = 800;
+const WIDTH: usize = 1920;
+const HEIGHT: usize = 1080;
 
 fn main() -> Result<(), String> {
     run(WIDTH, HEIGHT)

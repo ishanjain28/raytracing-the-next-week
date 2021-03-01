@@ -2,9 +2,9 @@ use {
     crate::{
         types::{
             material::{Dielectric, Lambertian, Metal},
-            Hitable, HitableList, MovingSphere, Ray, Sphere, Vec3,
+            MovingSphere, Ray, Sphere, Vec3,
         },
-        Camera, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
+        Camera, Hitable, HitableList, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
     },
     rand::{rngs::SmallRng, Rng, SeedableRng},
     rayon::prelude::*,
@@ -38,6 +38,9 @@ impl Display for Chunk {
     }
 }
 
+pub trait ParallelHit: Hitable + Send + Sync {}
+impl<T: Hitable + Send + Sync> ParallelHit for T {}
+
 pub struct Demo;
 
 impl Demo {
@@ -45,7 +48,7 @@ impl Demo {
         "motion_blur"
     }
 
-    fn world(&self) -> HitableList {
+    fn world(&self) -> impl Hitable {
         let mut world = HitableList {
             list: Vec::with_capacity(500),
         };
@@ -53,7 +56,7 @@ impl Demo {
         let mut rng = rand::thread_rng();
         let mut rng = SmallRng::from_rng(&mut rng).unwrap();
 
-        world.push(Box::new(Sphere::new(
+        world.push(Arc::new(Sphere::new(
             Vec3::new(0.0, -1000.0, 0.0),
             1000.0,
             Lambertian::new(Vec3::new(0.5, 0.5, 0.5)),
@@ -72,7 +75,7 @@ impl Demo {
                 if (center - l).length() > 0.9 {
                     if choose_material_probability < 0.8 {
                         // diffuse material
-                        world.push(Box::new(MovingSphere::new(
+                        world.push(Arc::new(MovingSphere::new(
                             center,
                             center + Vec3::new(0.0, 0.5 * rng.gen::<f64>(), 0.0),
                             0.0,
@@ -86,7 +89,7 @@ impl Demo {
                         )));
                     } else if choose_material_probability < 0.95 {
                         // metal material
-                        world.push(Box::new(Sphere::new(
+                        world.push(Arc::new(Sphere::new(
                             center,
                             radius,
                             Metal::with_fuzz(
@@ -100,23 +103,23 @@ impl Demo {
                         )));
                     } else {
                         // glass material
-                        world.push(Box::new(Sphere::new(center, radius, Dielectric::new(1.5))));
+                        world.push(Arc::new(Sphere::new(center, radius, Dielectric::new(1.5))));
                     }
                 }
             }
         }
 
-        world.push(Box::new(Sphere::new(
+        world.push(Arc::new(Sphere::new(
             Vec3::new(0.0, 1.0, 0.0),
             1.0,
             Dielectric::new(1.5),
         )));
-        world.push(Box::new(Sphere::new(
+        world.push(Arc::new(Sphere::new(
             Vec3::new(-4.0, 1.0, 0.0),
             1.0,
             Lambertian::new(Vec3::new(0.4, 0.2, 0.1)),
         )));
-        world.push(Box::new(Sphere::new(
+        world.push(Arc::new(Sphere::new(
             Vec3::new(4.0, 1.0, 0.0),
             1.0,
             Metal::with_fuzz(Vec3::new(0.7, 0.6, 0.5), 0.0),
@@ -143,7 +146,7 @@ impl Demo {
         )
     }
 
-    fn render_chunk(&self, chunk: &mut Chunk, camera: &Camera, world: &HitableList, samples: u8) {
+    fn render_chunk(&self, chunk: &mut Chunk, camera: &Camera, world: &impl Hitable, samples: u8) {
         let &mut Chunk {
             num: _,
             x,
@@ -168,7 +171,7 @@ impl Demo {
                     let v = (j as f64 + rng.gen::<f64>()) / y as f64;
 
                     let ray = camera.get_ray(u, v, &mut rng);
-                    color += calc_color(ray, &world, 0, &mut rng);
+                    color += calc_color(ray, world, 0, &mut rng);
                 }
 
                 color /= samples as f64;
@@ -270,14 +273,14 @@ impl Demo {
     }
 }
 
-fn calc_color(ray: Ray, world: &HitableList, depth: u32, rng: &mut SmallRng) -> Vec3 {
+fn calc_color<T: Hitable>(ray: Ray, world: &T, depth: u32, rng: &mut SmallRng) -> Vec3 {
     if let Some(hit_rec) = world.hit(&ray, 0.001, std::f64::MAX) {
         if depth >= 50 {
             Vec3::new(0.0, 0.0, 0.0)
         } else {
             let material = hit_rec.material;
             if let (attenuation, Some(scattered_ray)) = material.scatter(&ray, &hit_rec, rng) {
-                calc_color(scattered_ray, &world, depth + 1, rng) * attenuation
+                calc_color(scattered_ray, world, depth + 1, rng) * attenuation
             } else {
                 Vec3::new(0.0, 0.0, 0.0)
             }

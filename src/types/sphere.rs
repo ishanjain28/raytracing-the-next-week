@@ -1,4 +1,7 @@
-use crate::types::{HitRecord, Hitable, Material, Ray, Vec3};
+use crate::{
+    types::{Material, Ray, Vec3},
+    HitRecord, Hitable,
+};
 
 pub struct Sphere<T: Material + Sized> {
     center: Vec3,
