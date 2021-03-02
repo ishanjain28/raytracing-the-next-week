@@ -20,8 +20,6 @@ impl<T: Hitable + Clone> BvhNode<T> {
         .choose(rng)
         .unwrap();
 
-        objects.sort_by(comparator);
-
         let (left, right) = match objects.len() {
             1 => (
                 HitNode::Direct(objects[0].clone()),
@@ -39,6 +37,7 @@ impl<T: Hitable + Clone> BvhNode<T> {
             },
 
             n => {
+                objects.sort_by(comparator);
                 let (l, r) = objects.split_at_mut(n / 2);
                 (
                     HitNode::Bvh(Box::new(BvhNode::new(rng, l, t0, t1))),
@@ -94,7 +93,9 @@ impl<T: Hitable + Clone> BvhNode<T> {
 
 impl<T: Hitable> Hitable for BvhNode<T> {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        self.bounding_box(t_min, t_max)?;
+        if !self.bounding_box.hit(ray, t_min, t_max) {
+            return None;
+        }
 
         let hbox_left = self.left.hit(ray, t_min, t_max);
 

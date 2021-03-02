@@ -1,12 +1,10 @@
-use crate::BvhNode;
-
 use {
     crate::{
         types::{
             material::{Dielectric, Lambertian, Metal},
             MovingSphere, Ray, Sphere, Vec3,
         },
-        Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
+        BvhNode, Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
     },
     rand::{rngs::SmallRng, Rng, SeedableRng},
     rayon::prelude::*,
