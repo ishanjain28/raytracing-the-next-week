@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{demo::ParallelHit, types::Ray, Aabb, HitRecord, Hitable};
+use crate::{demos::ParallelHit, types::Ray, Aabb, HitRecord, Hitable};
 
 pub struct HitableList {
     pub list: Vec<Arc<dyn ParallelHit>>,

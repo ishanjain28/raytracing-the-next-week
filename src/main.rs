@@ -3,7 +3,7 @@
 mod aabb;
 mod bvh;
 mod camera;
-mod demo;
+mod demos;
 mod hitable;
 mod hitable_list;
 mod materials;
@@ -11,17 +11,19 @@ mod shapes;
 mod texture;
 mod types;
 
-pub use camera::Camera;
-
 pub use aabb::Aabb;
 pub use bvh::BvhNode;
+pub use camera::Camera;
 pub use hitable::{HitRecord, Hitable};
 pub use hitable_list::HitableList;
 pub use materials::Material;
-use std::time::Instant;
 pub use texture::Texture;
 
-const NUM_SAMPLES: u8 = 20;
+use demos::Demo;
+
+use std::time::Instant;
+
+const NUM_SAMPLES: u8 = 25;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
 const WIDTH: usize = 1920;
@@ -33,16 +35,18 @@ fn main() -> Result<(), String> {
 
 #[cfg(feature = "gui")]
 fn run(mut width: usize, mut height: usize) -> Result<(), String> {
+    use demos::ParallelHit;
     use sdl2::{
         event::{Event, WindowEvent},
         keyboard::Keycode,
         pixels::PixelFormatEnum,
     };
+    use std::sync::Arc;
 
     let sdl_ctx = sdl2::init()?;
     let video_subsys = sdl_ctx.video()?;
     let window = video_subsys
-        .window("Ray tracing in a weekend", width as u32, height as u32)
+        .window("Ray tracing the Next Week", width as u32, height as u32)
         .position_centered()
         .build()
         .map_err(|e| e.to_string())?;
@@ -63,9 +67,10 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
         .create_texture_static(PixelFormatEnum::BGR888, width as u32, height as u32)
         .map_err(|e| e.to_string())?;
 
-    let active_demo = demo::Demo;
-
+    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> =
+        &demos::CheckeredMotionBlur {};
     let mut should_update = true;
+
     loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -77,8 +82,16 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
                 Event::KeyUp { keycode, .. } => {
                     match keycode {
                         Some(Keycode::S) => {
-                            active_demo.save_as_ppm(&buffer, width, height);
+                            active_demo.save_as_ppm(&buffer, width, height, NUM_SAMPLES);
                             should_update = false;
+                        }
+                        Some(Keycode::Num1) => {
+                            active_demo = &demos::CheckeredMotionBlur {};
+                            should_update = true;
+                        }
+                        Some(Keycode::Num2) => {
+                            active_demo = &demos::TwoSpheres {};
+                            should_update = true;
                         }
                         None => unreachable!(),
                         _ => (),
@@ -107,7 +120,6 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
                 active_demo.name(),
                 now.elapsed().as_secs_f64()
             );
-
             texture.update(None, &buffer, width * 4).unwrap();
             canvas.copy(&texture, None, None).unwrap();
             canvas.present();
@@ -118,9 +130,16 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
 
 #[cfg(not(feature = "gui"))]
 fn run(width: usize, height: usize) -> Result<(), String> {
-    let mut buffer = vec![0; width * height * 4];
+    run_and_save_demo(demos::CheckeredMotionBlur {}, width, height);
 
-    let demo = demo::Demo;
+    run_and_save_demo(demos::TwoSpheres {}, width, height);
+
+    Ok(())
+}
+
+#[cfg(not(feature = "gui"))]
+fn run_and_save_demo(demo: impl Demo, width: usize, height: usize) {
+    let mut buffer = vec![0; width * height * 4];
 
     println!(
         "Starting {} at {}x{} with {} samples",
@@ -129,6 +148,7 @@ fn run(width: usize, height: usize) -> Result<(), String> {
         height,
         NUM_SAMPLES
     );
+
     let now = Instant::now();
     demo.render(&mut buffer, width, height, NUM_SAMPLES);
     println!(
@@ -137,7 +157,5 @@ fn run(width: usize, height: usize) -> Result<(), String> {
         now.elapsed().as_secs_f64()
     );
 
-    demo.save_as_ppm(&buffer, width, height);
-
-    Ok(())
+    demo.save_as_ppm(&buffer, width, height, NUM_SAMPLES);
 }
