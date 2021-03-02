@@ -1,6 +1,6 @@
 use crate::{
-    types::{Material, Ray, Vec3},
-    Aabb, HitRecord, Hitable,
+    types::{Ray, Vec3},
+    Aabb, HitRecord, Hitable, Material,
 };
 
 pub struct MovingSphere<T: Material + Sized> {
@@ -36,6 +36,19 @@ impl<T: Material + Sized> MovingSphere<T> {
             + (self.center_end - self.center_start)
                 * ((time - self.time_start) / (self.time_end - self.time_start))
     }
+
+    /// p is a point on the sphere of radius 1 & center at origin
+    /// u is between [0,1]. Angle around Y axis from -X axis
+    /// v is between [0,1]. Angle from -Y to +Y axis
+    pub fn get_uv(p: Vec3) -> (f64, f64) {
+        let theta = (-p.y()).acos();
+        let phi = f64::atan2(-p.z(), p.x()) + std::f64::consts::PI;
+
+        let u = phi / (2.0 * std::f64::consts::PI);
+        let v = theta / std::f64::consts::PI;
+
+        (u, v)
+    }
 }
 
 impl<T: Material + Sized> Hitable for MovingSphere<T> {
@@ -52,19 +65,29 @@ impl<T: Material + Sized> Hitable for MovingSphere<T> {
             let root = (-b - discriminant_root) / a;
             if root < t_max && root > t_min {
                 let p = ray.point_at_parameter(root);
+                let normal = (p - self.center(ray.time())) / self.radius;
+                let (u, v) = Self::get_uv(normal);
+
                 return Some(HitRecord {
                     t: root,
                     p,
-                    normal: (p - self.center(ray.time())) / self.radius,
+                    u,
+                    v,
+                    normal,
                     material: &self.material,
                 });
             }
             let root = (-b + discriminant_root) / a;
             if root < t_max && root > t_min {
                 let p = ray.point_at_parameter(root);
+                let normal = (p - self.center(ray.time())) / self.radius;
+                let (u, v) = Self::get_uv(normal);
+
                 return Some(HitRecord {
                     t: root,
                     p,
+                    u,
+                    v,
                     normal: (p - self.center(ray.time())) / self.radius,
                     material: &self.material,
                 });

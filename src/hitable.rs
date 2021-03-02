@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use crate::{
-    types::{Material, Ray, Vec3},
-    Aabb,
+    types::{Ray, Vec3},
+    Aabb, Material,
 };
 
 pub struct HitRecord<'a> {
@@ -24,6 +24,10 @@ pub struct HitRecord<'a> {
 
     /// material if any of the surface
     pub material: &'a dyn Material,
+
+    /// texture coordinates for an object
+    pub u: f64,
+    pub v: f64,
 }
 
 pub trait Hitable {

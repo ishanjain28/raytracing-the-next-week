@@ -1,19 +1,17 @@
-use {
-    crate::{
-        types::{
-            material::{Dielectric, Lambertian, Metal},
-            MovingSphere, Ray, Sphere, Vec3,
-        },
-        BvhNode, Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
-    },
-    rand::{rngs::SmallRng, Rng, SeedableRng},
-    rayon::prelude::*,
-    std::{
-        fmt::{Display, Formatter, Result as FmtResult},
-        fs::File,
-        io::Write,
-        sync::{Arc, Mutex},
-    },
+use crate::{
+    materials::{Dielectric, Lambertian, Metal},
+    shapes::{MovingSphere, Sphere},
+    texture::Solid,
+    types::{Ray, Vec3},
+    BvhNode, Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
+};
+use rand::{rngs::SmallRng, Rng, SeedableRng};
+use rayon::prelude::*;
+use std::{
+    fmt::{Display, Formatter, Result as FmtResult},
+    fs::File,
+    io::Write,
+    sync::{Arc, Mutex},
 };
 
 #[derive(Debug)]
@@ -57,7 +55,7 @@ impl Demo {
         world.push(Arc::new(Sphere::new(
             Vec3::new(0.0, -1000.0, 0.0),
             1000.0,
-            Lambertian::new(Vec3::new(0.5, 0.5, 0.5)),
+            Lambertian::new(Solid::new(Vec3::new(0.5, 0.5, 0.5))),
         )));
 
         let radius = 0.2;
@@ -79,11 +77,11 @@ impl Demo {
                             0.0,
                             1.0,
                             radius,
-                            Lambertian::new(Vec3::new(
+                            Lambertian::new(Solid::new(Vec3::new(
                                 rng.gen::<f64>() * rng.gen::<f64>(),
                                 rng.gen::<f64>() * rng.gen::<f64>(),
                                 rng.gen::<f64>() * rng.gen::<f64>(),
-                            )),
+                            ))),
                         )));
                     } else if choose_material_probability < 0.95 {
                         // metal material
@@ -115,7 +113,7 @@ impl Demo {
         world.push(Arc::new(Sphere::new(
             Vec3::new(-4.0, 1.0, 0.0),
             1.0,
-            Lambertian::new(Vec3::new(0.4, 0.2, 0.1)),
+            Lambertian::new(Solid::new(Vec3::new(0.4, 0.2, 0.1))),
         )));
         world.push(Arc::new(Sphere::new(
             Vec3::new(4.0, 1.0, 0.0),

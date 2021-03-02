@@ -6,6 +6,9 @@ mod camera;
 mod demo;
 mod hitable;
 mod hitable_list;
+mod materials;
+mod shapes;
+mod texture;
 mod types;
 
 pub use camera::Camera;
@@ -14,9 +17,11 @@ pub use aabb::Aabb;
 pub use bvh::BvhNode;
 pub use hitable::{HitRecord, Hitable};
 pub use hitable_list::HitableList;
+pub use materials::Material;
 use std::time::Instant;
+pub use texture::Texture;
 
-const NUM_SAMPLES: u8 = 25;
+const NUM_SAMPLES: u8 = 20;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
 const WIDTH: usize = 1920;
