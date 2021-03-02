@@ -1,7 +1,7 @@
 use crate::{
     materials::{Dielectric, Lambertian, Metal},
     shapes::{MovingSphere, Sphere},
-    texture::Solid,
+    texture::{Checker, Solid},
     types::{Ray, Vec3},
     BvhNode, Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
 };
@@ -55,7 +55,10 @@ impl Demo {
         world.push(Arc::new(Sphere::new(
             Vec3::new(0.0, -1000.0, 0.0),
             1000.0,
-            Lambertian::new(Solid::new(Vec3::new(0.5, 0.5, 0.5))),
+            Lambertian::new(Checker::new(
+                Solid::new(Vec3::new(0.2, 0.3, 0.1)),
+                Solid::new(Vec3::new(0.9, 0.9, 0.9)),
+            )),
         )));
 
         let radius = 0.2;

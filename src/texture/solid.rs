@@ -11,7 +11,7 @@ impl Solid {
 }
 
 impl Texture for Solid {
-    fn value(&self, _u: f64, _v: f64) -> Vec3 {
-        self.color
+    fn value(&self, _u: f64, _v: f64, p: &mut Vec3) {
+        *p = self.color
     }
 }

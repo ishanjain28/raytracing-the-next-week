@@ -21,6 +21,9 @@ impl<T: Texture + Send + Sync> Material for Lambertian<T> {
         let scatter_direction = hit_rec.normal + random_point_in_unit_sphere(rng);
         let scattered_ray = Ray::new(hit_rec.p, scatter_direction, ray.time());
 
-        (self.albedo.value(hit_rec.u, hit_rec.v), Some(scattered_ray))
+        let mut p = hit_rec.p;
+        self.albedo.value(hit_rec.u, hit_rec.v, &mut p);
+
+        (p, Some(scattered_ray))
     }
 }
