@@ -23,7 +23,7 @@ use demos::Demo;
 
 use std::time::Instant;
 
-const NUM_SAMPLES: u8 = 25;
+const NUM_SAMPLES: u8 = 255;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
 const WIDTH: usize = 1920;
@@ -68,7 +68,7 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> =
-        &demos::CheckeredMotionBlur {};
+        &demos::PerlinNoiseBall {};
     let mut should_update = true;
 
     loop {
@@ -91,6 +91,10 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
                         }
                         Some(Keycode::Num2) => {
                             active_demo = &demos::TwoSpheres {};
+                            should_update = true;
+                        }
+                        Some(Keycode::Num3) => {
+                            active_demo = &demos::PerlinNoiseBall {};
                             should_update = true;
                         }
                         None => unreachable!(),
@@ -130,9 +134,11 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
 
 #[cfg(not(feature = "gui"))]
 fn run(width: usize, height: usize) -> Result<(), String> {
-    run_and_save_demo(demos::CheckeredMotionBlur {}, width, height);
+    //    run_and_save_demo(demos::CheckeredMotionBlur {}, width, height);
 
-    run_and_save_demo(demos::TwoSpheres {}, width, height);
+    //run_and_save_demo(demos::TwoSpheres {}, width, height);
+
+    run_and_save_demo(demos::PerlinNoiseBall {}, width, height);
 
     Ok(())
 }
