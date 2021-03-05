@@ -12,7 +12,7 @@ impl<T: Texture> Checker<T> {
 }
 
 impl<T: Texture> Texture for Checker<T> {
-    fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
+    fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         let sine_wave = f64::sin(10.0 * p.x()) * f64::sin(10.0 * p.y()) * f64::sin(10.0 * p.z());
 
         if sine_wave < 0.0 {

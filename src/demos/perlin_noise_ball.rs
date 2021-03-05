@@ -29,13 +29,13 @@ impl Demo for PerlinNoiseBall {
         world.push(Arc::new(Sphere::new(
             Vec3::new(0.0, -1000.0, 0.0),
             1000.0,
-            Lambertian::new(PerlinNoise::new(&mut rng)),
+            Lambertian::new(PerlinNoise::with_scale(&mut rng, 4.0)),
         )));
 
         world.push(Arc::new(Sphere::new(
             Vec3::new(0.0, 2.0, 0.0),
             2.0,
-            Lambertian::new(PerlinNoise::new(&mut rng)),
+            Lambertian::new(PerlinNoise::with_scale(&mut rng, 4.0)),
         )));
 
         BvhNode::new(&mut rng, &mut world, 0.0, 1.0)

@@ -22,7 +22,7 @@ impl<T: Texture + Send + Sync> Material for Lambertian<T> {
         let scattered_ray = Ray::new(hit_rec.p, scatter_direction, ray.time());
 
         (
-            self.albedo.value(hit_rec.u, hit_rec.v, &hit_rec.p),
+            self.albedo.value(hit_rec.u, hit_rec.v, hit_rec.p),
             Some(scattered_ray),
         )
     }

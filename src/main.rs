@@ -23,7 +23,7 @@ use demos::Demo;
 
 use std::time::Instant;
 
-const NUM_SAMPLES: u8 = 255;
+const NUM_SAMPLES: u8 = 25;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
 const WIDTH: usize = 1920;
