@@ -13,11 +13,10 @@ pub struct Perlin {
 
 impl Perlin {
     pub fn new<R: Rng + ?Sized>(rng: &mut R) -> Self {
-        let mut points = vec![0.0; POINT_COUNT];
-
-        for p in points.iter_mut() {
-            *p = rng.gen_range(0.0..=1.0)
-        }
+        let points = rng
+            .sample_iter(Uniform::from(0.0..=1.0))
+            .take(POINT_COUNT)
+            .collect::<Vec<f64>>();
 
         let permute_x = Self::perlin_generate_permutation(rng);
         let permute_y = Self::perlin_generate_permutation(rng);
@@ -38,23 +37,9 @@ impl Perlin {
     }
 
     pub fn noise(&self, p: &Vec3) -> f64 {
-        let i = (4.0 * p.x()) as usize & 255;
-        let j = (4.0 * p.y()) as usize & 255;
-        let k = (4.0 * p.z()) as usize & 255;
-
-        //        if p.x() > 1.0 && p.y() > 1.0 && p.z() > 1.0 {
-        //            println!(
-        //                "p = {} i = {} j = {} k = {} pi = {} pj = {} pk = {} point = {}",
-        //                p,
-        //                i,
-        //                j,
-        //                k,
-        //                self.permute_x[i],
-        //                self.permute_x[j],
-        //                self.permute_x[k],
-        //                self.points[self.permute_x[i] ^ self.permute_y[j] ^ self.permute_z[k]]
-        //            );
-        //        }
+        let i = ((4.0 * p.x()) as i32 & 255) as usize;
+        let j = ((4.0 * p.y()) as i32 & 255) as usize;
+        let k = ((4.0 * p.z()) as i32 & 255) as usize;
 
         self.points[self.permute_x[i] ^ self.permute_y[j] ^ self.permute_z[k]]
     }

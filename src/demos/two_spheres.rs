@@ -21,7 +21,7 @@ impl Demo for TwoSpheres {
     }
 
     fn world(&self) -> Self::DemoT {
-        let mut world: Vec<Arc<dyn ParallelHit>> = Vec::with_capacity(500);
+        let mut world: Vec<Arc<dyn ParallelHit>> = Vec::with_capacity(2);
 
         let mut rng = rand::thread_rng();
         let mut rng = SmallRng::from_rng(&mut rng).unwrap();
