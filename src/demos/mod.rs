@@ -12,10 +12,12 @@ use std::{
 };
 
 mod checkered_motion_blur;
+mod image_texture;
 mod perlin_noise_ball;
 mod two_spheres;
 
 pub use checkered_motion_blur::CheckeredMotionBlur;
+pub use image_texture::ImageTextureDemo;
 pub use perlin_noise_ball::PerlinNoiseBall;
 pub use two_spheres::TwoSpheres;
 
