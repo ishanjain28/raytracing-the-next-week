@@ -26,6 +26,8 @@ impl PerlinNoise {
 
 impl Texture for PerlinNoise {
     fn value(&self, _u: f64, _v: f64, p: Vec3) -> Vec3 {
-        Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(p * self.scale)
+        Vec3::new(1.0, 1.0, 1.0)
+            * 0.5
+            * (1.0 + (self.scale * p.z() + 10.0 * self.noise.turbulence(p, 7)).sin())
     }
 }

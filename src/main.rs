@@ -23,11 +23,11 @@ use demos::Demo;
 
 use std::time::Instant;
 
-const NUM_SAMPLES: u8 = 25;
+const NUM_SAMPLES: u8 = 255;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
-const WIDTH: usize = 1920;
-const HEIGHT: usize = 1080;
+const WIDTH: usize = 2560;
+const HEIGHT: usize = 1440;
 
 fn main() -> Result<(), String> {
     run(WIDTH, HEIGHT)
@@ -134,9 +134,9 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
 
 #[cfg(not(feature = "gui"))]
 fn run(width: usize, height: usize) -> Result<(), String> {
-    //    run_and_save_demo(demos::CheckeredMotionBlur {}, width, height);
+    run_and_save_demo(demos::CheckeredMotionBlur {}, width, height);
 
-    //run_and_save_demo(demos::TwoSpheres {}, width, height);
+    run_and_save_demo(demos::TwoSpheres {}, width, height);
 
     run_and_save_demo(demos::PerlinNoiseBall {}, width, height);
 

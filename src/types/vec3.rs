@@ -3,6 +3,8 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
+use rand::Rng;
+
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3([f64; 3]);
 
@@ -72,6 +74,11 @@ impl Vec3 {
     pub fn unit_vector(&self) -> Vec3 {
         let length = self.length();
         Vec3([self[0] / length, self[1] / length, self[2] / length])
+    }
+
+    #[inline]
+    pub fn random<R: Rng + ?Sized>(rng: &mut R) -> Vec3 {
+        Vec3([rng.gen(), rng.gen(), rng.gen()])
     }
 }
 
