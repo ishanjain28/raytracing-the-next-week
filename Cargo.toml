@@ -3,9 +3,14 @@ authors = ["ishanjain28 <ishanjain28@gmail.com>"]
 edition = "2018"
 name = "rtnw"
 version = "0.1.0"
+
 [dependencies]
-image = "*"
 rayon = "1.5.0"
+
+[dependencies.image]
+features = ["jpeg", "png"]
+version = "0.23.14"
+default-features = false
 
 [dependencies.rand]
 features = ["small_rng"]
