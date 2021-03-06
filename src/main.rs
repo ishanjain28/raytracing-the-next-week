@@ -23,11 +23,11 @@ use demos::Demo;
 
 use std::time::Instant;
 
-const NUM_SAMPLES: u8 = 100;
+const NUM_SAMPLES: u16 = 1000;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
-const WIDTH: usize = 1920;
-const HEIGHT: usize = 1080;
+const WIDTH: usize = 2560;
+const HEIGHT: usize = 1440;
 
 fn main() -> Result<(), String> {
     run(WIDTH, HEIGHT)
@@ -67,8 +67,7 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
         .create_texture_static(PixelFormatEnum::BGR888, width as u32, height as u32)
         .map_err(|e| e.to_string())?;
 
-    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> =
-        &demos::ImageTextureDemo {};
+    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> = &demos::SimpleLight {};
     let mut should_update = true;
 
     loop {
@@ -99,6 +98,10 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
                         }
                         Some(Keycode::Num4) => {
                             active_demo = &demos::ImageTextureDemo {};
+                            should_update = true;
+                        }
+                        Some(Keycode::Num5) => {
+                            active_demo = &demos::SimpleLight {};
                             should_update = true;
                         }
                         None => unreachable!(),

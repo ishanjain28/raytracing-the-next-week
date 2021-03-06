@@ -10,7 +10,7 @@ pub struct Lambertian<T: Texture> {
     albedo: T,
 }
 
-impl<T: Texture + Send + Sync> Lambertian<T> {
+impl<T: Texture> Lambertian<T> {
     pub fn new(albedo: T) -> Self {
         Self { albedo }
     }

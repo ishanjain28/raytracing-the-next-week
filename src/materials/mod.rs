@@ -1,8 +1,10 @@
 mod dielectric;
+mod diffuse_light;
 mod lambertian;
 mod metal;
 
 pub use dielectric::Dielectric;
+pub use diffuse_light::DiffuseLight;
 pub use lambertian::Lambertian;
 pub use metal::Metal;
 use rand::{prelude::SmallRng, Rng};
@@ -13,7 +15,20 @@ use crate::{
 };
 
 pub trait Material: Send + Sync {
-    fn scatter(&self, ray: &Ray, hit_rec: &HitRecord, rng: &mut SmallRng) -> (Vec3, Option<Ray>);
+    // scatter returns the attenuation and the scattered ray.
+    // Attenuation is ignored completely if there is no scattered ray
+    fn scatter(
+        &self,
+        _ray: &Ray,
+        _hit_rec: &HitRecord,
+        _rng: &mut SmallRng,
+    ) -> (Vec3, Option<Ray>) {
+        (Vec3::new(0.0, 0.0, 0.0), None)
+    }
+
+    fn emit(&self, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
+        Vec3::new(0.0, 0.0, 0.0)
+    }
 }
 
 // Christophe Schlick's Polynomial approximation to figure out reflectivity as the angle changes

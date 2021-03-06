@@ -12,6 +12,7 @@ pub struct Metal {
 }
 
 impl Metal {
+    #[allow(dead_code)]
     pub fn new(albedo: Vec3) -> Self {
         Self { albedo, fuzz: 0.0 }
     }

@@ -49,36 +49,21 @@ impl<T: Material + Sized> Hitable for Sphere<T> {
         let discriminant_root = discriminant.sqrt();
 
         if discriminant > 0.0 {
-            let root = (-b - discriminant_root) / a;
-            if root < t_max && root > t_min {
-                let p = ray.point_at_parameter(root);
-                let normal = (p - self.center) / self.radius;
-                let (u, v) = Self::get_uv(normal);
-
-                return Some(HitRecord {
-                    t: root,
-                    p,
-                    u,
-                    v,
-                    normal,
-                    material: &self.material,
-                });
+            let mut root = (-b - discriminant_root) / a;
+            if root < t_min || root > t_max {
+                root = (-b + discriminant_root) / a;
             }
-
-            let root = (-b + discriminant_root) / a;
-            if root < t_max && root > t_min {
+            if root > t_min && root < t_max {
                 let p = ray.point_at_parameter(root);
                 let normal = (p - self.center) / self.radius;
-                let (u, v) = Self::get_uv(normal);
 
-                return Some(HitRecord {
-                    t: root,
+                return Some(HitRecord::new(
+                    root,
                     p,
-                    u,
-                    v,
-                    normal: (p - self.center) / self.radius,
-                    material: &self.material,
-                });
+                    normal,
+                    &self.material,
+                    Self::get_uv(normal),
+                ));
             }
         }
         None

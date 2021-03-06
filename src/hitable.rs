@@ -30,6 +30,25 @@ pub struct HitRecord<'a> {
     pub v: f64,
 }
 
+impl<'a> HitRecord<'a> {
+    pub fn new(
+        t: f64,
+        p: Vec3,
+        normal: Vec3,
+        material: &'a dyn Material,
+        (u, v): (f64, f64),
+    ) -> Self {
+        Self {
+            t,
+            p,
+            normal,
+            material,
+            u,
+            v,
+        }
+    }
+}
+
 pub trait Hitable {
     fn hit(&self, _ray: &Ray, _t_min: f64, _t_max: f64) -> Option<HitRecord>;
 

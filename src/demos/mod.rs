@@ -1,7 +1,4 @@
-use crate::{
-    types::{Ray, Vec3},
-    Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
-};
+use crate::{types::Vec3, Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION};
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 use rayon::prelude::*;
 use std::{
@@ -14,11 +11,13 @@ use std::{
 mod checkered_motion_blur;
 mod image_texture;
 mod perlin_noise_ball;
+mod simple_light;
 mod two_spheres;
 
 pub use checkered_motion_blur::CheckeredMotionBlur;
 pub use image_texture::ImageTextureDemo;
 pub use perlin_noise_ball::PerlinNoiseBall;
+pub use simple_light::SimpleLight;
 pub use two_spheres::TwoSpheres;
 
 #[derive(Debug)]
@@ -55,7 +54,11 @@ pub trait Demo: Send + Sync {
 
     fn camera(&self, aspect_ratio: f64) -> Camera;
 
-    fn render_chunk(&self, chunk: &mut Chunk, camera: &Camera, world: &Self::DemoT, samples: u8) {
+    fn get_background(&self) -> Vec3 {
+        Vec3::new(0.7, 0.8, 1.0)
+    }
+
+    fn render_chunk(&self, chunk: &mut Chunk, camera: &Camera, world: &Self::DemoT, samples: u16) {
         let &mut Chunk {
             num: _,
             x,
@@ -69,6 +72,7 @@ pub trait Demo: Send + Sync {
         let mut offset = 0;
         let mut rng = rand::thread_rng();
         let mut rng = SmallRng::from_rng(&mut rng).unwrap();
+        let background = self.get_background();
 
         assert!(buffer.len() >= nx * ny * 4);
 
@@ -80,7 +84,7 @@ pub trait Demo: Send + Sync {
                     let v = (j as f64 + rng.gen::<f64>()) / y as f64;
 
                     let ray = camera.get_ray(u, v, &mut rng);
-                    color += calc_color(ray, world, 0, &mut rng);
+                    color += ray.color(world, &mut rng, &background, 0);
                 }
 
                 color /= samples as f64;
@@ -90,7 +94,7 @@ pub trait Demo: Send + Sync {
         });
     }
 
-    fn render(&self, buf: &mut Vec<u8>, x: usize, y: usize, samples: u8) {
+    fn render(&self, buf: &mut Vec<u8>, x: usize, y: usize, samples: u16) {
         let world = self.world();
         let delta_x = x / VERTICAL_PARTITION;
         let delta_y = y / HORIZONTAL_PARTITION;
@@ -163,7 +167,7 @@ pub trait Demo: Send + Sync {
         }
     }
 
-    fn save_as_ppm(&self, buf: &[u8], width: usize, height: usize, samples: u8) {
+    fn save_as_ppm(&self, buf: &[u8], width: usize, height: usize, samples: u16) {
         let header = format!("P3\n{} {}\n255\n", width, height);
 
         let mut file = match File::create(&format!(
@@ -185,24 +189,5 @@ pub trait Demo: Send + Sync {
                 Err(e) => panic!("couldn't write to {}: {}", self.name(), e),
             }
         }
-    }
-}
-
-fn calc_color<T: Hitable>(ray: Ray, world: &T, depth: u32, rng: &mut SmallRng) -> Vec3 {
-    if let Some(hit_rec) = world.hit(&ray, 0.001, std::f64::MAX) {
-        if depth >= 50 {
-            Vec3::new(0.0, 0.0, 0.0)
-        } else {
-            let material = hit_rec.material;
-            if let (attenuation, Some(scattered_ray)) = material.scatter(&ray, &hit_rec, rng) {
-                calc_color(scattered_ray, world, depth + 1, rng) * attenuation
-            } else {
-                Vec3::new(0.0, 0.0, 0.0)
-            }
-        }
-    } else {
-        let unit_direction = ray.direction().unit_vector();
-        let t = 0.5 * (unit_direction.y() + 1.0);
-        Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
     }
 }
