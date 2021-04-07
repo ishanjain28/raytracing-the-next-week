@@ -28,6 +28,8 @@ pub struct HitRecord<'a> {
     /// texture coordinates for an object
     pub u: f64,
     pub v: f64,
+
+    pub front_face: bool,
 }
 
 impl<'a> HitRecord<'a> {
@@ -45,6 +47,17 @@ impl<'a> HitRecord<'a> {
             material,
             u,
             v,
+            front_face: false,
+        }
+    }
+
+    pub fn set_face_normal(&mut self, ray: &Ray) {
+        self.front_face = ray.direction.dot(&self.normal) < 0.0;
+
+        self.normal = if self.front_face {
+            self.normal
+        } else {
+            -self.normal
         }
     }
 }
@@ -61,5 +74,39 @@ impl<T: Hitable + ?Sized> Hitable for Arc<T> {
     }
     fn bounding_box(&self, t0: f64, t1: f64) -> Option<Aabb> {
         self.as_ref().bounding_box(t0, t1)
+    }
+}
+
+pub struct Translate<T> {
+    object: T,
+    offset: Vec3,
+}
+
+impl<T> Translate<T> {
+    pub fn new(object: T, offset: Vec3) -> Self {
+        Self { object, offset }
+    }
+}
+
+impl<T: Hitable> Hitable for Translate<T> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let moved_ray = Ray::new(ray.origin - self.offset, ray.direction, ray.time());
+
+        if let Some(mut hit) = self.object.hit(&moved_ray, t_min, t_max) {
+            hit.p += self.offset;
+            hit.set_face_normal(&moved_ray);
+
+            Some(hit)
+        } else {
+            None
+        }
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<Aabb> {
+        if let Some(bbox) = self.object.bounding_box(t0, t1) {
+            Some(Aabb::new(bbox.min + self.offset, bbox.max + self.offset))
+        } else {
+            None
+        }
     }
 }

@@ -1,4 +1,8 @@
-use crate::{types::Vec3, Camera, Hitable, HORIZONTAL_PARTITION, VERTICAL_PARTITION};
+use crate::{
+    hitable::Hitable,
+    types::{Color, Vec3},
+    Camera, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
+};
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 use rayon::prelude::*;
 use std::{
@@ -9,12 +13,14 @@ use std::{
 };
 
 mod checkered_motion_blur;
+mod cornell_box;
 mod image_texture;
 mod perlin_noise_ball;
 mod simple_light;
 mod two_spheres;
 
 pub use checkered_motion_blur::CheckeredMotionBlur;
+pub use cornell_box::CornellBox;
 pub use image_texture::ImageTextureDemo;
 pub use perlin_noise_ball::PerlinNoiseBall;
 pub use simple_light::SimpleLight;
@@ -55,7 +61,7 @@ pub trait Demo: Send + Sync {
     fn camera(&self, aspect_ratio: f64) -> Camera;
 
     fn get_background(&self) -> Vec3 {
-        Vec3::new(0.7, 0.8, 1.0)
+        Vec3::new(0.0, 0.0, 0.0)
     }
 
     fn render_chunk(&self, chunk: &mut Chunk, camera: &Camera, world: &Self::DemoT, samples: u16) {
@@ -156,14 +162,16 @@ pub trait Demo: Send + Sync {
 
     #[inline]
     fn update_rgb(&self, buffer: &mut [u8], color: Vec3, offset: usize) {
+        let color: Color = color.into();
+
         if let Some(pos) = buffer.get_mut(offset) {
-            *pos = (255.99 * color.r().sqrt()) as u8;
+            *pos = color.0;
         }
         if let Some(pos) = buffer.get_mut(offset + 1) {
-            *pos = (255.99 * color.g().sqrt()) as u8;
+            *pos = color.1
         }
         if let Some(pos) = buffer.get_mut(offset + 2) {
-            *pos = (255.99 * color.b().sqrt()) as u8;
+            *pos = color.2;
         }
     }
 

@@ -2,7 +2,11 @@ use std::cmp::Ordering;
 
 use rand::{prelude::SliceRandom, Rng};
 
-use crate::{types::Ray, Aabb, HitRecord, Hitable};
+use crate::{
+    hitable::{HitRecord, Hitable},
+    types::Ray,
+    Aabb,
+};
 
 pub struct BvhNode<T: Hitable> {
     bounding_box: Aabb,

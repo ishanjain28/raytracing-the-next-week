@@ -5,37 +5,45 @@ use std::{
 
 use rand::Rng;
 
-#[derive(Debug, Copy, Clone)]
+use crate::{Asf64, Dimension, X, Y, Z};
+
+#[derive(Default, Debug, Copy, Clone)]
 pub struct Vec3([f64; 3]);
 
 impl Vec3 {
     #[inline]
-    pub const fn new(a: f64, b: f64, c: f64) -> Vec3 {
-        Vec3([a, b, c])
+    pub fn new(a: impl Asf64, b: impl Asf64, c: impl Asf64) -> Vec3 {
+        Vec3([a.as_(), b.as_(), c.as_()])
     }
+
+    pub fn splat(xyz: impl Asf64) -> Self {
+        Self::new(xyz, xyz, xyz)
+    }
+
+    pub fn random<R: Rng + ?Sized>(rng: &mut R) -> Self {
+        Self(rng.gen())
+    }
+
     #[inline]
     pub fn x(&self) -> f64 {
-        self[0]
+        self.get::<X>()
     }
     #[inline]
     pub fn y(&self) -> f64 {
-        self[1]
+        self.get::<Y>()
     }
     #[inline]
     pub fn z(&self) -> f64 {
-        self[2]
+        self.get::<Z>()
     }
-    #[inline]
-    pub fn r(&self) -> f64 {
-        self[0]
+
+    pub fn get<D: Dimension>(&self) -> f64 {
+        self.0[D::INDEX]
     }
-    #[inline]
-    pub fn g(&self) -> f64 {
-        self[1]
-    }
-    #[inline]
-    pub fn b(&self) -> f64 {
-        self[2]
+
+    pub fn set<D: Dimension>(mut self, value: f64) -> Self {
+        self.0[D::INDEX] = value;
+        self
     }
 
     #[inline]
@@ -45,40 +53,55 @@ impl Vec3 {
 
     #[inline]
     pub fn sq_len(&self) -> f64 {
-        self[0] * self[0] + self[1] * self[1] + self[2] * self[2]
+        self.x() * self.x() + self.y() * self.y() + self.z() * self.z()
     }
 
     #[inline]
     pub fn dot(&self, v: &Vec3) -> f64 {
-        self[0] * v[0] + self[1] * v[1] + self[2] * v[2]
+        self.x() * v.x() + self.y() * v.y() + self.z() * v.z()
     }
 
     #[inline]
     pub fn cross(&self, v: &Vec3) -> Vec3 {
         Vec3([
-            self[1] * v[2] - self[2] * v[1],
-            self[2] * v[0] - self[0] * v[2],
-            self[0] * v[1] - self[1] * v[0],
+            self.y() * v.z() - self.z() * v.y(),
+            self.z() * v.x() - self.x() * v.z(),
+            self.x() * v.y() - self.y() * v.x(),
         ])
     }
 
     #[inline]
-    pub fn make_unit_vector(&mut self) {
-        let k = 1.0f64 / (self[0] * self[0] + self[1] * self[1] + self[2] * self[2]);
-        self[0] *= k;
-        self[1] *= k;
-        self[2] *= k;
+    pub fn unit_vector(self) -> Vec3 {
+        self / self.length()
+    }
+
+    pub fn min(self, other: Self) -> Vec3 {
+        Self([
+            self.x().min(other.x()),
+            self.y().min(other.y()),
+            self.z().min(other.z()),
+        ])
+    }
+
+    pub fn max(self, other: Self) -> Vec3 {
+        Self([
+            self.x().max(other.x()),
+            self.y().max(other.y()),
+            self.z().max(other.z()),
+        ])
+    }
+
+    pub fn min_element(self) -> f64 {
+        self.x().min(self.y()).min(self.z())
+    }
+
+    pub fn max_element(self) -> f64 {
+        self.x().max(self.y()).max(self.z())
     }
 
     #[inline]
-    pub fn unit_vector(&self) -> Vec3 {
-        let length = self.length();
-        Vec3([self[0] / length, self[1] / length, self[2] / length])
-    }
-
-    #[inline]
-    pub fn random<R: Rng + ?Sized>(rng: &mut R) -> Vec3 {
-        Vec3([rng.gen(), rng.gen(), rng.gen()])
+    pub fn sqrt(self) -> Self {
+        Vec3::new(self.x().sqrt(), self.y().sqrt(), self.z().sqrt())
     }
 }
 
@@ -86,7 +109,7 @@ impl Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, o: Vec3) -> Vec3 {
-        Vec3([self[0] + o[0], self[1] + o[1], self[2] + o[2]])
+        Vec3([self.x() + o.x(), self.y() + o.y(), self.z() + o.z()])
     }
 }
 
@@ -102,15 +125,15 @@ impl Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, o: Vec3) -> Vec3 {
-        Vec3([self[0] - o[0], self[1] - o[1], self[2] - o[2]])
+        Vec3([self.x() - o.x(), self.y() - o.y(), self.z() - o.z()])
     }
 }
 
 impl SubAssign for Vec3 {
     fn sub_assign(&mut self, o: Vec3) {
-        self[0] -= o[0];
-        self[1] -= o[1];
-        self[2] -= o[2];
+        self.0[0] -= o.0[0];
+        self.0[1] -= o.0[1];
+        self.0[2] -= o.0[2];
     }
 }
 
@@ -118,37 +141,37 @@ impl Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Vec3 {
-        Vec3([-self[0], -self[1], -self[2]])
+        Vec3([-self.x(), -self.y(), -self.z()])
     }
 }
 
 impl MulAssign<Vec3> for Vec3 {
     fn mul_assign(&mut self, o: Vec3) {
-        self[0] *= o[0];
-        self[1] *= o[1];
-        self[2] *= o[2];
+        self.0[0] *= o.0[0];
+        self.0[1] *= o.0[1];
+        self.0[2] *= o.0[2];
     }
 }
 
 impl MulAssign<f64> for Vec3 {
     fn mul_assign(&mut self, o: f64) {
-        self[0] *= o;
-        self[1] *= o;
-        self[2] *= o;
+        self.0[0] *= o;
+        self.0[1] *= o;
+        self.0[2] *= o;
     }
 }
 
 impl Mul<f64> for Vec3 {
     type Output = Vec3;
     fn mul(self, o: f64) -> Vec3 {
-        Vec3([self[0] * o, self[1] * o, self[2] * o])
+        Vec3([self.x() * o, self.y() * o, self.z() * o])
     }
 }
 
 impl Mul<Vec3> for Vec3 {
     type Output = Vec3;
     fn mul(self, o: Vec3) -> Vec3 {
-        Vec3([self[0] * o[0], self[1] * o[1], self[2] * o[2]])
+        Vec3([self.x() * o.x(), self.y() * o.y(), self.z() * o.z()])
     }
 }
 
@@ -156,7 +179,7 @@ impl Div<Vec3> for Vec3 {
     type Output = Vec3;
 
     fn div(self, o: Vec3) -> Vec3 {
-        Vec3([self[0] / o[0], self[1] / o[1], self[2] / o[2]])
+        Vec3([self.x() / o.x(), self.y() / o.y(), self.z() / o.z()])
     }
 }
 
@@ -165,7 +188,7 @@ impl Div<f64> for Vec3 {
 
     fn div(self, o: f64) -> Vec3 {
         let o = 1.0 / o;
-        Vec3([self[0] * o, self[1] * o, self[2] * o])
+        Vec3([self.x() * o, self.y() * o, self.z() * o])
     }
 }
 
@@ -194,6 +217,17 @@ impl IndexMut<usize> for Vec3 {
 
 impl Display for Vec3 {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        f.write_fmt(format_args!("{} {} {}", self[0], self[1], self[2]))
+        f.write_fmt(format_args!(
+            "{} {} {}",
+            self.get::<X>(),
+            self.get::<Y>(),
+            self.get::<Z>()
+        ))
+    }
+}
+
+impl<A: Asf64, B: Asf64, C: Asf64> From<(A, B, C)> for Vec3 {
+    fn from((x, y, z): (A, B, C)) -> Self {
+        Self::new(x, y, z)
     }
 }

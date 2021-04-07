@@ -4,11 +4,14 @@ use rand::{prelude::SmallRng, SeedableRng};
 
 use crate::{
     demos::{Demo, ParallelHit},
-    materials::{DiffuseLight, Lambertian},
-    shapes::{Sphere, XyRectangle},
+    hitable::{
+        shapes::{RectBuilder, Sphere},
+        BvhNode,
+    },
+    materials::{DiffuseLight, Lambertian, MaterialBuilder},
     texture::{PerlinNoise, Solid},
     types::Vec3,
-    BvhNode, Camera,
+    Camera,
 };
 
 pub struct SimpleLight {}
@@ -18,10 +21,6 @@ impl Demo for SimpleLight {
 
     fn name(&self) -> &'static str {
         "simple_light"
-    }
-
-    fn get_background(&self) -> Vec3 {
-        Vec3::new(0.0, 0.0, 0.0)
     }
 
     fn world(&self) -> Self::DemoT {
@@ -39,14 +38,14 @@ impl Demo for SimpleLight {
             2.0,
             Lambertian::new(PerlinNoise::with_scale(&mut rng, 4.0)),
         )));
-        world.push(Arc::new(XyRectangle::new(
-            3.0,
-            5.0,
-            1.0,
-            3.0,
-            -2.0,
-            DiffuseLight::new(Solid::new(Vec3::new(4.0, 4.0, 4.0))),
-        )));
+
+        world.push(Arc::new(
+            RectBuilder
+                .x(3.0..=5.0)
+                .y(1.0..=3.0)
+                .z(-2.0)
+                .material(DiffuseLight::new(Solid::new(Vec3::new(4.0, 4.0, 4.0)))),
+        ));
         world.push(Arc::new(Sphere::new(
             Vec3::new(0.0, 7.0, 0.0),
             2.0,

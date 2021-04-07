@@ -10,8 +10,8 @@ pub use metal::Metal;
 use rand::{prelude::SmallRng, Rng};
 
 use crate::{
+    hitable::HitRecord,
     types::{Ray, Vec3},
-    HitRecord,
 };
 
 pub trait Material: Send + Sync {
@@ -23,11 +23,11 @@ pub trait Material: Send + Sync {
         _hit_rec: &HitRecord,
         _rng: &mut SmallRng,
     ) -> (Vec3, Option<Ray>) {
-        (Vec3::new(0.0, 0.0, 0.0), None)
+        (Vec3::splat(0.0), None)
     }
 
     fn emit(&self, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
-        Vec3::new(0.0, 0.0, 0.0)
+        Vec3::splat(0.0)
     }
 }
 
@@ -56,11 +56,15 @@ fn refract(incident: Vec3, normal: Vec3, ni_over_nt: f64) -> Option<Vec3> {
 }
 
 fn random_point_in_unit_sphere<R: Rng + ?Sized>(rng: &mut R) -> Vec3 {
-    let mut point = Vec3::new(rng.gen::<f64>(), rng.gen::<f64>(), rng.gen::<f64>()) * 2.0
-        - Vec3::new(1.0, 1.0, 1.0);
+    let mut point = Vec3::random(rng) * 2.0 - Vec3::splat(1.0);
     while point.sq_len() >= 1.0 {
-        point = Vec3::new(rng.gen::<f64>(), rng.gen::<f64>(), rng.gen::<f64>()) * 2.0
-            - Vec3::new(1.0, 1.0, 1.0);
+        point = Vec3::random(rng) * 2.0 - Vec3::splat(1.0);
     }
     point
+}
+
+pub trait MaterialBuilder<T> {
+    type Finished;
+
+    fn material(self, material: T) -> Self::Finished;
 }

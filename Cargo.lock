@@ -331,6 +331,7 @@ name = "rtnw"
 version = "0.1.0"
 dependencies = [
  "image",
+ "num-traits",
  "rand",
  "rayon",
  "sdl2",

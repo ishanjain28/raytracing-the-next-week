@@ -1,33 +1,32 @@
 #![allow(clippy::suspicious_arithmetic_impl)]
 
 mod aabb;
-mod bvh;
 mod camera;
 mod demos;
 mod hitable;
-mod hitable_list;
 mod materials;
-mod shapes;
 mod texture;
 mod types;
 
 pub use aabb::Aabb;
-pub use bvh::BvhNode;
 pub use camera::Camera;
-pub use hitable::{HitRecord, Hitable};
-pub use hitable_list::HitableList;
 pub use materials::Material;
 pub use texture::Texture;
+pub use types::{Dimension, X, Y, Z};
 
+use crate::hitable::BvhNode;
 use demos::Demo;
 
 use std::time::Instant;
 
-const NUM_SAMPLES: u16 = 1000;
+pub trait Asf64: num_traits::AsPrimitive<f64> {}
+impl<T: num_traits::AsPrimitive<f64>> Asf64 for T {}
+
+const NUM_SAMPLES: u16 = 100;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
-const WIDTH: usize = 2560;
-const HEIGHT: usize = 1440;
+const WIDTH: usize = 1500;
+const HEIGHT: usize = 1500;
 
 fn main() -> Result<(), String> {
     run(WIDTH, HEIGHT)
@@ -67,7 +66,7 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
         .create_texture_static(PixelFormatEnum::BGR888, width as u32, height as u32)
         .map_err(|e| e.to_string())?;
 
-    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> = &demos::SimpleLight {};
+    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> = &demos::CornellBox {};
     let mut should_update = true;
 
     loop {
@@ -102,6 +101,10 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
                         }
                         Some(Keycode::Num5) => {
                             active_demo = &demos::SimpleLight {};
+                            should_update = true;
+                        }
+                        Some(Keycode::Num6) => {
+                            active_demo = &demos::CornellBox {};
                             should_update = true;
                         }
                         None => unreachable!(),

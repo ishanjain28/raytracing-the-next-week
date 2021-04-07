@@ -1,9 +1,10 @@
 use rand::prelude::SmallRng;
 
 use crate::{
+    hitable::HitRecord,
     materials::{random_point_in_unit_sphere, reflect},
     types::{Ray, Vec3},
-    HitRecord, Material,
+    Material,
 };
 
 pub struct Metal {
@@ -28,14 +29,14 @@ impl Material for Metal {
         hit_rec: &HitRecord,
         rng: &mut SmallRng,
     ) -> (Vec3, Option<Ray>) {
-        let reflected_ray = reflect(ray_in.direction().unit_vector(), hit_rec.normal);
+        let reflected_ray = reflect(ray_in.direction.unit_vector(), hit_rec.normal);
         let scattered_ray = Ray::new(
             hit_rec.p,
             reflected_ray + random_point_in_unit_sphere(rng) * self.fuzz,
             ray_in.time(),
         );
 
-        if scattered_ray.direction().dot(&hit_rec.normal) > 0.0 {
+        if scattered_ray.direction.dot(&hit_rec.normal) > 0.0 {
             (self.albedo, Some(scattered_ray))
         } else {
             (self.albedo, None)

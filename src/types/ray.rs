@@ -1,28 +1,25 @@
 use rand::prelude::SmallRng;
 
-use crate::{types::Vec3, Hitable};
+use crate::{hitable::Hitable, types::Vec3};
 
 pub struct Ray {
-    a: Vec3,
-    b: Vec3,
+    pub origin: Vec3,
+    pub direction: Vec3,
     time: f64,
 }
 
 impl Ray {
-    pub fn new(a: Vec3, b: Vec3, time: f64) -> Ray {
-        Ray { a, b, time }
+    pub fn new(origin: Vec3, direction: Vec3, time: f64) -> Ray {
+        Ray {
+            origin,
+            direction,
+            time,
+        }
     }
-    #[inline]
-    pub const fn origin(&self) -> Vec3 {
-        self.a
-    }
-    #[inline]
-    pub const fn direction(&self) -> Vec3 {
-        self.b
-    }
+
     #[inline]
     pub fn point_at_parameter(&self, t: f64) -> Vec3 {
-        self.a + self.b * t
+        self.origin + self.direction * t
     }
     #[inline]
     pub const fn time(&self) -> f64 {
@@ -38,7 +35,7 @@ impl Ray {
     ) -> Vec3 {
         if let Some(hit_rec) = world.hit(self, 0.001, std::f64::MAX) {
             if depth >= 50 {
-                Vec3::new(0.0, 0.0, 0.0)
+                Vec3::splat(0.0f64)
             } else {
                 let material = hit_rec.material;
                 let emitted_color = hit_rec.material.emit(hit_rec.u, hit_rec.v, hit_rec.p);

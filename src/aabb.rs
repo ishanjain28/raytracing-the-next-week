@@ -13,9 +13,9 @@ impl Aabb {
 
     pub fn hit(&self, ray: &Ray, mut t_min: f64, mut t_max: f64) -> bool {
         for i in 0..=2 {
-            let inverse_dir = 1.0 / ray.direction()[i];
-            let mut t0 = (self.min[i] - ray.origin()[i]) * inverse_dir;
-            let mut t1 = (self.max[i] - ray.origin()[i]) * inverse_dir;
+            let inverse_dir = 1.0 / ray.direction[i];
+            let mut t0 = (self.min[i] - ray.origin[i]) * inverse_dir;
+            let mut t1 = (self.max[i] - ray.origin[i]) * inverse_dir;
             if inverse_dir < 0.0 {
                 std::mem::swap(&mut t0, &mut t1);
             }
@@ -31,17 +31,8 @@ impl Aabb {
     }
 
     pub fn surrounding_box(box0: Aabb, box1: Aabb) -> Self {
-        let smol_box = Vec3::new(
-            box0.min.x().min(box1.min.x()),
-            box0.min.y().min(box1.min.y()),
-            box0.min.z().min(box1.min.z()),
-        );
-
-        let big_box = Vec3::new(
-            box0.max.x().max(box1.max.x()),
-            box0.max.y().max(box1.max.y()),
-            box0.max.z().max(box1.max.z()),
-        );
+        let smol_box = Vec3::min(box0.min, box1.min);
+        let big_box = Vec3::max(box0.max, box1.max);
 
         Self {
             min: smol_box,

@@ -1,18 +1,19 @@
 use rand::{prelude::SmallRng, Rng};
 
 use crate::{
+    hitable::HitRecord,
     materials::{reflect, refract, schlick},
     types::{Ray, Vec3},
-    HitRecord, Material,
+    Material,
 };
 
 pub struct Dielectric {
-    reflection_index: f64,
+    refraction_index: f64,
 }
 
 impl Dielectric {
-    pub fn new(reflection_index: f64) -> Self {
-        Self { reflection_index }
+    pub fn new(refraction_index: f64) -> Self {
+        Self { refraction_index }
     }
 }
 
@@ -23,44 +24,37 @@ impl Material for Dielectric {
         hit_rec: &HitRecord,
         rng: &mut SmallRng,
     ) -> (Vec3, Option<Ray>) {
-        let reflected_ray = reflect(ray_in.direction(), hit_rec.normal);
         // Glass absorbs nothing! So, Attenuation is always going to be 1.0 for this
         let attenuation = Vec3::new(1.0, 1.0, 1.0);
 
-        let (outward_normal, ni_over_nt, cosine) = if ray_in.direction().dot(&hit_rec.normal) > 0.0
-        {
-            (
-                -hit_rec.normal,
-                self.reflection_index,
-                (ray_in.direction().dot(&hit_rec.normal) * self.reflection_index)
-                    / ray_in.direction().length(),
-            )
+        let refraction_ratio = if hit_rec.front_face {
+            1.0 / self.refraction_index
         } else {
-            (
-                hit_rec.normal,
-                1.0 / self.reflection_index,
-                (-ray_in.direction().dot(&hit_rec.normal)) / ray_in.direction().length(),
-            )
+            self.refraction_index
         };
 
-        if let Some(refracted_ray) = refract(ray_in.direction(), outward_normal, ni_over_nt) {
-            let reflect_prob = schlick(cosine, self.reflection_index);
+        let unit_direction = ray_in.direction.unit_vector();
+        let cosine = (-unit_direction).dot(&hit_rec.normal).min(1.0);
+        let sin_theta = (1.0 - cosine * cosine).sqrt();
 
-            if rng.gen::<f64>() < reflect_prob {
-                (
-                    attenuation,
-                    Some(Ray::new(hit_rec.p, reflected_ray, ray_in.time())),
-                )
-            } else {
-                (
-                    attenuation,
-                    Some(Ray::new(hit_rec.p, refracted_ray, ray_in.time())),
-                )
-            }
-        } else {
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+
+        if cannot_refract || schlick(cosine, refraction_ratio) > rng.gen::<f64>() {
+            let direction = reflect(unit_direction, hit_rec.normal);
             (
                 attenuation,
-                Some(Ray::new(hit_rec.p, reflected_ray, ray_in.time())),
+                Some(Ray::new(hit_rec.p, direction, ray_in.time())),
+            )
+        } else if let Some(direction) = refract(unit_direction, hit_rec.normal, refraction_ratio) {
+            (
+                attenuation,
+                Some(Ray::new(hit_rec.p, direction, ray_in.time())),
+            )
+        } else {
+            let direction = reflect(unit_direction, hit_rec.normal);
+            (
+                attenuation,
+                Some(Ray::new(hit_rec.p, direction, ray_in.time())),
             )
         }
     }

@@ -4,8 +4,8 @@ use rand::{prelude::SmallRng, SeedableRng};
 
 use crate::{
     demos::{Demo, ParallelHit},
+    hitable::shapes::Sphere,
     materials::Lambertian,
-    shapes::Sphere,
     texture::ImageTexture,
     types::Vec3,
     BvhNode, Camera,
@@ -18,6 +18,10 @@ impl Demo for ImageTextureDemo {
 
     fn name(&self) -> &'static str {
         "image_texture"
+    }
+
+    fn get_background(&self) -> Vec3 {
+        Vec3::new(0.7, 0.8, 1.0)
     }
 
     fn world(&self) -> Self::DemoT {

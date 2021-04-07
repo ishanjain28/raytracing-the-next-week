@@ -4,11 +4,11 @@ use rand::{prelude::SmallRng, SeedableRng};
 
 use crate::{
     demos::{Demo, ParallelHit},
+    hitable::{shapes::Sphere, BvhNode},
     materials::Lambertian,
-    shapes::Sphere,
     texture::PerlinNoise,
     types::Vec3,
-    BvhNode, Camera,
+    Camera,
 };
 
 pub struct PerlinNoiseBall {}
@@ -18,6 +18,10 @@ impl Demo for PerlinNoiseBall {
 
     fn name(&self) -> &'static str {
         "perlin_noise"
+    }
+
+    fn get_background(&self) -> Vec3 {
+        Vec3::new(0.7, 0.8, 1.0)
     }
 
     fn world(&self) -> Self::DemoT {

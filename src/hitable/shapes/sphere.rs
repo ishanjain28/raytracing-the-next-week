@@ -1,40 +1,22 @@
 use crate::{
+    hitable::{HitRecord, Hitable},
     types::{Ray, Vec3},
-    Aabb, HitRecord, Hitable, Material,
+    Aabb, Material,
 };
 
-pub struct MovingSphere<T: Material + Sized> {
+pub struct Sphere<T: Material + Sized> {
+    center: Vec3,
     radius: f64,
-    center_start: Vec3,
-    center_end: Vec3,
-    time_start: f64,
-    time_end: f64,
     material: T,
 }
 
-impl<T: Material + Sized> MovingSphere<T> {
-    pub fn new(
-        center_start: Vec3,
-        center_end: Vec3,
-        time_start: f64,
-        time_end: f64,
-        radius: f64,
-        material: T,
-    ) -> Self {
+impl<T: Material + Sized> Sphere<T> {
+    pub fn new(center: Vec3, radius: f64, material: T) -> Self {
         Self {
-            center_start,
-            center_end,
-            time_start,
-            time_end,
+            center,
             radius,
             material,
         }
-    }
-
-    fn center(&self, time: f64) -> Vec3 {
-        self.center_start
-            + (self.center_end - self.center_start)
-                * ((time - self.time_start) / (self.time_end - self.time_start))
     }
 
     /// p is a point on the sphere of radius 1 & center at origin
@@ -51,13 +33,19 @@ impl<T: Material + Sized> MovingSphere<T> {
     }
 }
 
-impl<T: Material + Sized> Hitable for MovingSphere<T> {
+impl<T: Material + Sized> Hitable for Sphere<T> {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let oc = ray.origin() - self.center(ray.time());
-        let a = ray.direction().dot(&ray.direction());
-        let b = oc.dot(&ray.direction());
+        let oc = ray.origin - self.center;
+        let a = ray.direction.dot(&ray.direction);
+        let b = oc.dot(&ray.direction);
         let c = oc.dot(&oc) - self.radius * self.radius;
 
+        // The discriminant is calculated using b^2 - 4 * a * c
+        // but in this specific case, If we put the equation in the
+        // formula to find quadratic roots, We can get this shorter
+        // formula to find the discriminant.
+        // Check this for detailed proof
+        // https://vchizhov.github.io/resources/ray%20tracing/ray%20tracing%20tutorial%20series%20vchizhov/ray_casting/part1/intersecting_a_sphere.md.html#appendix
         let discriminant = b * b - a * c;
         let discriminant_root = discriminant.sqrt();
 
@@ -68,7 +56,7 @@ impl<T: Material + Sized> Hitable for MovingSphere<T> {
             }
             if root > t_min && root < t_max {
                 let p = ray.point_at_parameter(root);
-                let normal = (p - self.center(ray.time())) / self.radius;
+                let normal = (p - self.center) / self.radius;
 
                 return Some(HitRecord::new(
                     root,
@@ -82,11 +70,8 @@ impl<T: Material + Sized> Hitable for MovingSphere<T> {
         None
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<Aabb> {
+    fn bounding_box(&self, _t0: f64, _t1: f64) -> Option<Aabb> {
         let radius = Vec3::new(self.radius, self.radius, self.radius);
-        let box_smol = Aabb::new(self.center(t0) - radius, self.center(t0) + radius);
-        let box_big = Aabb::new(self.center(t1) - radius, self.center(t1) + radius);
-
-        Some(Aabb::surrounding_box(box_smol, box_big))
+        Some(Aabb::new(self.center - radius, self.center + radius))
     }
 }

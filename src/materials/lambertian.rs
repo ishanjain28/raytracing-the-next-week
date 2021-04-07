@@ -1,11 +1,13 @@
 use rand::prelude::SmallRng;
 
 use crate::{
+    hitable::HitRecord,
     materials::random_point_in_unit_sphere,
     types::{Ray, Vec3},
-    HitRecord, Material, Texture,
+    Material, Texture,
 };
 
+#[derive(Copy, Clone)]
 pub struct Lambertian<T: Texture> {
     albedo: T,
 }

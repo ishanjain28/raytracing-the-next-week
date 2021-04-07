@@ -1,10 +1,13 @@
 use crate::{
     demos::{Demo, ParallelHit},
+    hitable::{
+        shapes::{MovingSphere, Sphere},
+        BvhNode,
+    },
     materials::{Dielectric, Lambertian, Metal},
-    shapes::{MovingSphere, Sphere},
     texture::{Checker, Solid},
     types::Vec3,
-    BvhNode, Camera,
+    Camera,
 };
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 use std::sync::Arc;
@@ -16,6 +19,10 @@ impl Demo for CheckeredMotionBlur {
 
     fn name(&self) -> &'static str {
         "checkered_motion_blur"
+    }
+
+    fn get_background(&self) -> Vec3 {
+        Vec3::new(0.7, 0.8, 1.0)
     }
 
     fn world(&self) -> Self::DemoT {

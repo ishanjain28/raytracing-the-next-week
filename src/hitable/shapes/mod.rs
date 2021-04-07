@@ -1,7 +1,9 @@
+mod cuboid;
 mod moving_sphere;
+mod rectangle;
 mod sphere;
-mod xy_rectangle;
 
+pub use cuboid::Cuboid;
 pub use moving_sphere::MovingSphere;
+pub use rectangle::RectBuilder;
 pub use sphere::Sphere;
-pub use xy_rectangle::XyRectangle;
