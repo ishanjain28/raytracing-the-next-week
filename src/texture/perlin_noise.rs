@@ -2,6 +2,7 @@ use rand::Rng;
 
 use crate::{texture::Perlin, types::Vec3, Texture};
 
+#[derive(Clone)]
 pub struct PerlinNoise {
     noise: Perlin,
     scale: f64,

@@ -7,6 +7,7 @@ use crate::{
     Material,
 };
 
+#[derive(Clone)]
 pub struct Metal {
     albedo: Vec3,
     fuzz: f64,

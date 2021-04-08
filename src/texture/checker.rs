@@ -1,17 +1,18 @@
 use crate::{types::Vec3, Texture};
 
-pub struct Checker<T: Texture> {
+#[derive(Clone)]
+pub struct Checker<T: Texture + Clone> {
     odd: T,
     even: T,
 }
 
-impl<T: Texture> Checker<T> {
+impl<T: Texture + Clone> Checker<T> {
     pub fn new(even: T, odd: T) -> Self {
         Self { odd, even }
     }
 }
 
-impl<T: Texture> Texture for Checker<T> {
+impl<T: Texture + Clone> Texture for Checker<T> {
     fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         let sine_wave = f64::sin(10.0 * p.x()) * f64::sin(10.0 * p.y()) * f64::sin(10.0 * p.z());
 

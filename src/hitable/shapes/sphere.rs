@@ -4,13 +4,14 @@ use crate::{
     Aabb, Material,
 };
 
-pub struct Sphere<T: Material + Sized> {
+#[derive(Clone)]
+pub struct Sphere<T: Material + Clone + Sized> {
     center: Vec3,
     radius: f64,
     material: T,
 }
 
-impl<T: Material + Sized> Sphere<T> {
+impl<T: Material + Clone + Sized> Sphere<T> {
     pub fn new(center: Vec3, radius: f64, material: T) -> Self {
         Self {
             center,
@@ -33,7 +34,7 @@ impl<T: Material + Sized> Sphere<T> {
     }
 }
 
-impl<T: Material + Sized> Hitable for Sphere<T> {
+impl<T: Material + Clone + Sized> Hitable for Sphere<T> {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = ray.direction.dot(&ray.direction);
@@ -58,13 +59,12 @@ impl<T: Material + Sized> Hitable for Sphere<T> {
                 let p = ray.point_at_parameter(root);
                 let normal = (p - self.center) / self.radius;
 
-                return Some(HitRecord::new(
-                    root,
-                    p,
-                    normal,
-                    &self.material,
-                    Self::get_uv(normal),
-                ));
+                let mut hit_rec =
+                    HitRecord::new(root, p, normal, &self.material, Self::get_uv(normal));
+
+                hit_rec.set_face_normal(ray);
+
+                return Some(hit_rec);
             }
         }
         None

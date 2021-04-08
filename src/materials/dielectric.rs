@@ -7,6 +7,7 @@ use crate::{
     Material,
 };
 
+#[derive(Clone)]
 pub struct Dielectric {
     refraction_index: f64,
 }
@@ -25,7 +26,7 @@ impl Material for Dielectric {
         rng: &mut SmallRng,
     ) -> (Vec3, Option<Ray>) {
         // Glass absorbs nothing! So, Attenuation is always going to be 1.0 for this
-        let attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let attenuation = Vec3::splat(1.0);
 
         let refraction_ratio = if hit_rec.front_face {
             1.0 / self.refraction_index

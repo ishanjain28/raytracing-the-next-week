@@ -1,5 +1,5 @@
 use crate::{
-    hitable::Hitable,
+    hitable::{hitable_list::HitableList, BvhNode, Hitable},
     types::{Color, Vec3},
     Camera, HORIZONTAL_PARTITION, VERTICAL_PARTITION,
 };
@@ -13,6 +13,7 @@ use std::{
 };
 
 mod checkered_motion_blur;
+mod cornell_box;
 mod cornell_smoke_and_fog;
 mod image_texture;
 mod instances;
@@ -21,6 +22,7 @@ mod simple_light;
 mod two_spheres;
 
 pub use checkered_motion_blur::CheckeredMotionBlur;
+pub use cornell_box::CornellBox;
 pub use cornell_smoke_and_fog::CornellSmokeAndFog;
 pub use image_texture::ImageTextureDemo;
 pub use instances::Instances;
@@ -198,6 +200,34 @@ pub trait Demo: Send + Sync {
                 Ok(_) => (),
                 Err(e) => panic!("couldn't write to {}: {}", self.name(), e),
             }
+        }
+    }
+}
+
+pub enum DemoWrapper {
+    HitableList(Box<dyn Demo<DemoT = HitableList>>),
+    BVHNode(Box<dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>>>),
+}
+
+impl DemoWrapper {
+    pub fn name(&self) -> &'static str {
+        match self {
+            DemoWrapper::HitableList(v) => v.name(),
+            DemoWrapper::BVHNode(v) => v.name(),
+        }
+    }
+
+    pub fn save_as_ppm(&self, buf: &[u8], width: usize, height: usize, samples: u16) {
+        match self {
+            DemoWrapper::HitableList(v) => v.save_as_ppm(buf, width, height, samples),
+            DemoWrapper::BVHNode(v) => v.save_as_ppm(buf, width, height, samples),
+        }
+    }
+
+    pub fn render(&self, buf: &mut Vec<u8>, x: usize, y: usize, samples: u16) {
+        match self {
+            DemoWrapper::HitableList(v) => v.render(buf, x, y, samples),
+            DemoWrapper::BVHNode(v) => v.save_as_ppm(buf, x, y, samples),
         }
     }
 }

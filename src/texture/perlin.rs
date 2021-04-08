@@ -3,6 +3,7 @@ use rand::Rng;
 
 const POINT_COUNT: usize = 256;
 
+#[derive(Clone)]
 pub struct Perlin {
     points: Vec<Vec3>,
 

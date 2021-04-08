@@ -1,6 +1,6 @@
 use crate::{types::Vec3, Texture};
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Solid {
     color: Vec3,
 }

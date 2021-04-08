@@ -15,14 +15,14 @@ pub use texture::Texture;
 pub use types::{Dimension, X, Y, Z};
 
 use crate::hitable::BvhNode;
-use demos::Demo;
+use demos::DemoWrapper;
 
 use std::time::Instant;
 
 pub trait Asf64: num_traits::AsPrimitive<f64> {}
 impl<T: num_traits::AsPrimitive<f64>> Asf64 for T {}
 
-const NUM_SAMPLES: u16 = 100;
+const NUM_SAMPLES: u16 = 10000;
 const VERTICAL_PARTITION: usize = 12;
 const HORIZONTAL_PARTITION: usize = 12;
 const WIDTH: usize = 1500;
@@ -34,13 +34,11 @@ fn main() -> Result<(), String> {
 
 #[cfg(feature = "gui")]
 fn run(mut width: usize, mut height: usize) -> Result<(), String> {
-    use demos::ParallelHit;
     use sdl2::{
         event::{Event, WindowEvent},
         keyboard::Keycode,
         pixels::PixelFormatEnum,
     };
-    use std::sync::Arc;
 
     let sdl_ctx = sdl2::init()?;
     let video_subsys = sdl_ctx.video()?;
@@ -66,8 +64,7 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
         .create_texture_static(PixelFormatEnum::BGR888, width as u32, height as u32)
         .map_err(|e| e.to_string())?;
 
-    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> =
-        &demos::CornellSmokeAndFog {};
+    let mut active_demo = DemoWrapper::HitableList(Box::new(demos::CornellBox {}));
     let mut should_update = true;
 
     loop {
@@ -85,31 +82,38 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
                             should_update = false;
                         }
                         Some(Keycode::Num1) => {
-                            active_demo = &demos::CheckeredMotionBlur {};
+                            active_demo =
+                                DemoWrapper::BVHNode(Box::new(demos::CheckeredMotionBlur {}));
                             should_update = true;
                         }
                         Some(Keycode::Num2) => {
-                            active_demo = &demos::TwoSpheres {};
+                            active_demo = DemoWrapper::BVHNode(Box::new(demos::TwoSpheres {}));
                             should_update = true;
                         }
                         Some(Keycode::Num3) => {
-                            active_demo = &demos::PerlinNoiseBall {};
+                            active_demo = DemoWrapper::BVHNode(Box::new(demos::PerlinNoiseBall {}));
                             should_update = true;
                         }
                         Some(Keycode::Num4) => {
-                            active_demo = &demos::ImageTextureDemo {};
+                            active_demo =
+                                DemoWrapper::BVHNode(Box::new(demos::ImageTextureDemo {}));
                             should_update = true;
                         }
                         Some(Keycode::Num5) => {
-                            active_demo = &demos::SimpleLight {};
+                            active_demo = DemoWrapper::BVHNode(Box::new(demos::SimpleLight {}));
                             should_update = true;
                         }
                         Some(Keycode::Num6) => {
-                            active_demo = &demos::Instances {};
+                            active_demo = DemoWrapper::BVHNode(Box::new(demos::Instances {}));
                             should_update = true;
                         }
                         Some(Keycode::Num7) => {
-                            active_demo = &demos::CornellSmokeAndFog {};
+                            active_demo =
+                                DemoWrapper::BVHNode(Box::new(demos::CornellSmokeAndFog {}));
+                            should_update = true;
+                        }
+                        Some(Keycode::Num8) => {
+                            active_demo = DemoWrapper::HitableList(Box::new(demos::CornellBox {}));
                             should_update = true;
                         }
                         None => unreachable!(),
@@ -149,19 +153,26 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
 
 #[cfg(not(feature = "gui"))]
 fn run(width: usize, height: usize) -> Result<(), String> {
-    run_and_save_demo(demos::CheckeredMotionBlur {}, width, height);
+    let demos: [DemoWrapper; 8] = [
+        DemoWrapper::BVHNode(Box::new(demos::CheckeredMotionBlur {})),
+        DemoWrapper::BVHNode(Box::new(demos::TwoSpheres {})),
+        DemoWrapper::BVHNode(Box::new(demos::PerlinNoiseBall {})),
+        DemoWrapper::BVHNode(Box::new(demos::ImageTextureDemo {})),
+        DemoWrapper::BVHNode(Box::new(demos::SimpleLight {})),
+        DemoWrapper::BVHNode(Box::new(demos::Instances {})),
+        DemoWrapper::BVHNode(Box::new(demos::CornellSmokeAndFog {})),
+        DemoWrapper::HitableList(Box::new(demos::CornellBox {})),
+    ];
 
-    run_and_save_demo(demos::TwoSpheres {}, width, height);
-
-    run_and_save_demo(demos::PerlinNoiseBall {}, width, height);
-
-    run_and_save_demo(demos::ImageTexture {}, width, height);
+    for demo in demos.iter() {
+        run_and_save_demo(demo, width, height)
+    }
 
     Ok(())
 }
 
 #[cfg(not(feature = "gui"))]
-fn run_and_save_demo(demo: impl Demo, width: usize, height: usize) {
+fn run_and_save_demo(demo: &DemoWrapper, width: usize, height: usize) {
     let mut buffer = vec![0; width * height * 4];
 
     println!(

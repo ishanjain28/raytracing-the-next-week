@@ -1,5 +1,6 @@
 use crate::{types::Vec3, Material, Texture};
 
+#[derive(Clone)]
 pub struct DiffuseLight<T: Texture> {
     emit: T,
 }

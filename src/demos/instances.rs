@@ -61,21 +61,21 @@ impl Demo for Instances {
                 .x(0.0..=555.0)
                 .z(0.0..=555.0)
                 .y(0.0)
-                .material(white),
+                .material(white.clone()),
         ));
         world.push(Arc::new(
             RectBuilder
                 .x(0.0..=555.0)
                 .z(0.0..=555.0)
                 .y(555.0)
-                .material(white),
+                .material(white.clone()),
         ));
         world.push(Arc::new(
             RectBuilder
                 .x(0.0..=555.0)
                 .y(0.0..=555.0)
                 .z(555.0)
-                .material(white),
+                .material(white.clone()),
         ));
 
         // Add the two boxes
@@ -83,7 +83,7 @@ impl Demo for Instances {
             Cuboid::new(
                 Vec3::new(0.0, 0.0, 0.0),
                 Vec3::new(165.0, 330.0, 165.0),
-                white,
+                white.clone(),
             )
             .rotate_y(15.0)
             .translate(Vec3::new(265.0, 0.0, 295.0)),

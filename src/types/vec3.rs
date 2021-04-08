@@ -1,6 +1,9 @@
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},
-    ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign},
+    ops::{
+        Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, RangeInclusive, Sub,
+        SubAssign,
+    },
 };
 
 use rand::Rng;
@@ -22,6 +25,14 @@ impl Vec3 {
 
     pub fn random<R: Rng + ?Sized>(rng: &mut R) -> Self {
         Self(rng.gen())
+    }
+
+    pub fn random_in_range<R: Rng + ?Sized>(rng: &mut R, range: RangeInclusive<f64>) -> Self {
+        Vec3::new(
+            rng.gen_range(range.clone()),
+            rng.gen_range(range.clone()),
+            rng.gen_range(range),
+        )
     }
 
     #[inline]

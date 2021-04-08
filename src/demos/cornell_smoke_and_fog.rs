@@ -62,7 +62,7 @@ impl Demo for CornellSmokeAndFog {
                 .x(0.0..=555.0)
                 .z(0.0..=555.0)
                 .y(0.0)
-                .material(white),
+                .material(white.clone()),
         ));
 
         world.push(Arc::new(
@@ -70,21 +70,25 @@ impl Demo for CornellSmokeAndFog {
                 .x(0.0..=555.0)
                 .z(0.0..=555.0)
                 .y(555.0)
-                .material(white),
+                .material(white.clone()),
         ));
         world.push(Arc::new(
             RectBuilder
                 .x(0.0..=555.0)
                 .y(0.0..=555.0)
                 .z(555.0)
-                .material(white),
+                .material(white.clone()),
         ));
 
         // Add the two boxes
         world.push(Arc::new(ConstantMedium::new(
-            Cuboid::new(Vec3::splat(0.0), Vec3::new(165.0, 330.0, 165.0), white)
-                .rotate_y(15.0)
-                .translate(Vec3::new(265.0, 0.0, 295.0)),
+            Cuboid::new(
+                Vec3::splat(0.0),
+                Vec3::new(165.0, 330.0, 165.0),
+                white.clone(),
+            )
+            .rotate_y(15.0)
+            .translate(Vec3::new(265.0, 0.0, 295.0)),
             Isotropic::new(Solid::new(Vec3::splat(0.0))),
             0.01,
         )));

@@ -2,6 +2,7 @@ use image::{error::ImageError, io::Reader as ImageReader};
 
 use crate::{types::Vec3, Texture};
 
+#[derive(Clone)]
 pub struct ImageTexture {
     image: Vec<u8>,
     // (width, height)

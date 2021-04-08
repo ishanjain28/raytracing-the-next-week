@@ -71,13 +71,12 @@ impl<T: Material + Sized> Hitable for MovingSphere<T> {
                 let p = ray.point_at_parameter(root);
                 let normal = (p - self.center(ray.time())) / self.radius;
 
-                return Some(HitRecord::new(
-                    root,
-                    p,
-                    normal,
-                    &self.material,
-                    Self::get_uv(normal),
-                ));
+                let mut hit_rec =
+                    HitRecord::new(root, p, normal, &self.material, Self::get_uv(normal));
+
+                hit_rec.set_face_normal(ray);
+
+                return Some(hit_rec);
             }
         }
         None
