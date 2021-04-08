@@ -13,15 +13,15 @@ use std::{
 };
 
 mod checkered_motion_blur;
-mod cornell_box;
 mod image_texture;
+mod instances;
 mod perlin_noise_ball;
 mod simple_light;
 mod two_spheres;
 
 pub use checkered_motion_blur::CheckeredMotionBlur;
-pub use cornell_box::CornellBox;
 pub use image_texture::ImageTextureDemo;
+pub use instances::Instances;
 pub use perlin_noise_ball::PerlinNoiseBall;
 pub use simple_light::SimpleLight;
 pub use two_spheres::TwoSpheres;

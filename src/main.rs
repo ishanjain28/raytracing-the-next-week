@@ -66,7 +66,7 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
         .create_texture_static(PixelFormatEnum::BGR888, width as u32, height as u32)
         .map_err(|e| e.to_string())?;
 
-    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> = &demos::CornellBox {};
+    let mut active_demo: &dyn Demo<DemoT = BvhNode<Arc<dyn ParallelHit>>> = &demos::Instances {};
     let mut should_update = true;
 
     loop {
@@ -104,7 +104,7 @@ fn run(mut width: usize, mut height: usize) -> Result<(), String> {
                             should_update = true;
                         }
                         Some(Keycode::Num6) => {
-                            active_demo = &demos::CornellBox {};
+                            active_demo = &demos::Instances {};
                             should_update = true;
                         }
                         None => unreachable!(),

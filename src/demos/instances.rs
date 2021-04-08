@@ -4,20 +4,23 @@ use rand::{prelude::SmallRng, SeedableRng};
 
 use crate::{
     demos::{Demo, ParallelHit},
-    hitable::shapes::{Cuboid, RectBuilder},
+    hitable::{
+        shapes::{Cuboid, RectBuilder},
+        Hitable,
+    },
     materials::{DiffuseLight, Lambertian, MaterialBuilder},
     texture::Solid,
     types::Vec3,
     BvhNode, Camera,
 };
 
-pub struct CornellBox {}
+pub struct Instances {}
 
-impl Demo for CornellBox {
+impl Demo for Instances {
     type DemoT = BvhNode<Arc<dyn ParallelHit>>;
 
     fn name(&self) -> &'static str {
-        "cornell_box"
+        "instances"
     }
 
     fn world(&self) -> Self::DemoT {
@@ -76,16 +79,20 @@ impl Demo for CornellBox {
         ));
 
         // Add the two boxes
-        world.push(Arc::new(Cuboid::new(
-            Vec3::new(136.0, 0.0, 65.0),
-            Vec3::new(295.0, 165.0, 230.0),
-            white,
-        )));
-        world.push(Arc::new(Cuboid::new(
-            Vec3::new(265.0, 0.0, 295.0),
-            Vec3::new(430.0, 330.0, 460.0),
-            white,
-        )));
+        world.push(Arc::new(
+            Cuboid::new(
+                Vec3::new(0.0, 0.0, 0.0),
+                Vec3::new(165.0, 330.0, 165.0),
+                white,
+            )
+            .rotate_y(15.0)
+            .translate(Vec3::new(265.0, 0.0, 295.0)),
+        ));
+        world.push(Arc::new(
+            Cuboid::new(Vec3::new(0.0, 0.0, 0.0), Vec3::splat(165.0), white)
+                .rotate_y(-18.0)
+                .translate(Vec3::new(130.0, 0.0, 65.0)),
+        ));
 
         BvhNode::new(&mut rng, &mut world, 0.0, 1.0)
     }
