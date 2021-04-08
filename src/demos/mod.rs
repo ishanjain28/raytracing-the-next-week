@@ -13,6 +13,7 @@ use std::{
 };
 
 mod checkered_motion_blur;
+mod cornell_smoke_and_fog;
 mod image_texture;
 mod instances;
 mod perlin_noise_ball;
@@ -20,6 +21,7 @@ mod simple_light;
 mod two_spheres;
 
 pub use checkered_motion_blur::CheckeredMotionBlur;
+pub use cornell_smoke_and_fog::CornellSmokeAndFog;
 pub use image_texture::ImageTextureDemo;
 pub use instances::Instances;
 pub use perlin_noise_ball::PerlinNoiseBall;

@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::{
     hitable::{HitRecord, Hitable},
     types::{Ray, Vec3},
-    Aabb, Dimension, X, Y, Z,
+    Aabb, Dimension,
 };
 
 pub struct Rotate<D1, D2, D3, T: Hitable> {
@@ -28,7 +28,7 @@ where
         let cos_theta = radians.cos();
 
         let mut min = Vec3::splat(f64::MAX);
-        let mut max = Vec3::splat(-f64::MAX);
+        let mut max = Vec3::splat(f64::MIN);
 
         let bbox = if let Some(bbox) = object.bounding_box(0.0, 1.0) {
             for i in 0..2 {

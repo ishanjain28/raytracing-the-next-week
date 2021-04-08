@@ -3,6 +3,7 @@ pub mod hitable_list;
 mod rotate;
 pub mod shapes;
 mod translate;
+pub mod volume;
 
 pub use bvh::*;
 pub use translate::*;
