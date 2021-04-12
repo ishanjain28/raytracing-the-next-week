@@ -23,11 +23,11 @@ impl<T: Material + Sized> MovingSphere<T> {
         material: T,
     ) -> Self {
         Self {
+            radius,
             center_start,
             center_end,
             time_start,
             time_end,
-            radius,
             material,
         }
     }
