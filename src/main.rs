@@ -23,10 +23,10 @@ pub trait Asf64: num_traits::AsPrimitive<f64> {}
 impl<T: num_traits::AsPrimitive<f64>> Asf64 for T {}
 
 const NUM_SAMPLES: u16 = 500;
-const VERTICAL_PARTITION: usize = 12;
-const HORIZONTAL_PARTITION: usize = 12;
-const WIDTH: usize = 500;
-const HEIGHT: usize = 500;
+const VERTICAL_PARTITION: usize = 30;
+const HORIZONTAL_PARTITION: usize = 30;
+const WIDTH: usize = 800;
+const HEIGHT: usize = 800;
 
 fn main() -> Result<(), String> {
     run(WIDTH, HEIGHT)
