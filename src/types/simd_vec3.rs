@@ -1,22 +1,21 @@
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},
-    ops::{
-        Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, RangeInclusive, Sub,
-        SubAssign,
-    },
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, RangeInclusive, Sub, SubAssign},
 };
 
 use rand::Rng;
 
 use crate::{Asf64, Dimension, X, Y, Z};
 
+use packed_simd::{f64x4, shuffle};
+
 #[derive(Default, Debug, Copy, Clone)]
-pub struct Vec3([f64; 3]);
+pub struct Vec3(f64x4);
 
 impl Vec3 {
     #[inline]
     pub fn new(a: impl Asf64, b: impl Asf64, c: impl Asf64) -> Vec3 {
-        Self([a.as_(), b.as_(), c.as_()])
+        Self(f64x4::new(a.as_(), b.as_(), c.as_(), 0.0))
     }
 
     pub fn splat(xyz: impl Asf64) -> Self {
@@ -24,7 +23,7 @@ impl Vec3 {
     }
 
     pub fn random<R: Rng + ?Sized>(rng: &mut R) -> Self {
-        Self(rng.gen())
+        Self(f64x4::from_slice_aligned(&rng.gen::<[f64; 4]>()))
     }
 
     pub fn random_in_range<R: Rng + ?Sized>(rng: &mut R, range: RangeInclusive<f64>) -> Self {
@@ -49,12 +48,11 @@ impl Vec3 {
     }
 
     pub fn get<D: Dimension>(&self) -> f64 {
-        self.0[D::INDEX]
+        unsafe { self.0.extract_unchecked(D::INDEX) }
     }
 
-    pub fn set<D: Dimension>(mut self, value: f64) -> Self {
-        self.0[D::INDEX] = value;
-        self
+    pub fn set<D: Dimension>(self, value: f64) -> Self {
+        Self(unsafe { self.0.replace_unchecked(D::INDEX, value) })
     }
 
     #[inline]
@@ -64,21 +62,23 @@ impl Vec3 {
 
     #[inline]
     pub fn sq_len(&self) -> f64 {
-        self.x() * self.x() + self.y() * self.y() + self.z() * self.z()
+        (self.0 * self.0).sum()
     }
 
     #[inline]
     pub fn dot(&self, v: &Vec3) -> f64 {
-        self.x() * v.x() + self.y() * v.y() + self.z() * v.z()
+        (self.0 * v.0).sum()
     }
 
     #[inline]
     pub fn cross(&self, v: &Vec3) -> Vec3 {
-        Vec3([
-            self.y() * v.z() - self.z() * v.y(),
-            self.z() * v.x() - self.x() * v.z(),
-            self.x() * v.y() - self.y() * v.x(),
-        ])
+        // https://web.archive.org/web/20210412192227/https://geometrian.com/programming/tutorials/cross-product/index.php
+        let tmp0: f64x4 = shuffle!(self.0, [1, 2, 0, 3]);
+        let tmp1: f64x4 = shuffle!(v.0, [2, 0, 1, 3]);
+        let tmp2: f64x4 = shuffle!(self.0, [2, 0, 1, 3]);
+        let tmp3: f64x4 = shuffle!(v.0, [1, 2, 0, 3]);
+
+        Vec3(tmp0 * tmp1 - tmp2 * tmp3)
     }
 
     #[inline]
@@ -87,32 +87,24 @@ impl Vec3 {
     }
 
     pub fn min(self, other: Self) -> Vec3 {
-        Self([
-            self.x().min(other.x()),
-            self.y().min(other.y()),
-            self.z().min(other.z()),
-        ])
+        Self(self.0.min(other.0))
     }
 
     pub fn max(self, other: Self) -> Vec3 {
-        Self([
-            self.x().max(other.x()),
-            self.y().max(other.y()),
-            self.z().max(other.z()),
-        ])
+        Self(self.0.max(other.0))
     }
 
     pub fn min_element(self, other: f64) -> f64 {
-        self.x().min(self.y()).min(self.z()).min(other)
+        unsafe { self.0.replace_unchecked(3, other).min_element() }
     }
 
     pub fn max_element(self, other: f64) -> f64 {
-        self.x().max(self.y()).max(self.z()).max(other)
+        unsafe { self.0.replace_unchecked(3, other).max_element() }
     }
 
     #[inline]
     pub fn sqrt(self) -> Self {
-        Vec3::new(self.x().sqrt(), self.y().sqrt(), self.z().sqrt())
+        Self(self.0.sqrt())
     }
 }
 
@@ -120,15 +112,13 @@ impl Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, o: Vec3) -> Vec3 {
-        Vec3([self.x() + o.x(), self.y() + o.y(), self.z() + o.z()])
+        Vec3(self.0 + o.0)
     }
 }
 
 impl AddAssign for Vec3 {
     fn add_assign(&mut self, o: Vec3) {
-        self.0[0] += o.0[0];
-        self.0[1] += o.0[1];
-        self.0[2] += o.0[2];
+        self.0 += o.0
     }
 }
 
@@ -136,15 +126,13 @@ impl Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, o: Vec3) -> Vec3 {
-        Vec3([self.x() - o.x(), self.y() - o.y(), self.z() - o.z()])
+        Vec3(self.0 - o.0)
     }
 }
 
 impl SubAssign for Vec3 {
     fn sub_assign(&mut self, o: Vec3) {
-        self.0[0] -= o.0[0];
-        self.0[1] -= o.0[1];
-        self.0[2] -= o.0[2];
+        self.0 -= o.0;
     }
 }
 
@@ -152,37 +140,33 @@ impl Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Vec3 {
-        Vec3([-self.x(), -self.y(), -self.z()])
+        Vec3(-self.0)
     }
 }
 
 impl MulAssign<Vec3> for Vec3 {
     fn mul_assign(&mut self, o: Vec3) {
-        self.0[0] *= o.0[0];
-        self.0[1] *= o.0[1];
-        self.0[2] *= o.0[2];
+        self.0 *= o.0
     }
 }
 
 impl MulAssign<f64> for Vec3 {
     fn mul_assign(&mut self, o: f64) {
-        self.0[0] *= o;
-        self.0[1] *= o;
-        self.0[2] *= o;
+        self.0 *= o
     }
 }
 
 impl Mul<f64> for Vec3 {
     type Output = Vec3;
     fn mul(self, o: f64) -> Vec3 {
-        Vec3([self.x() * o, self.y() * o, self.z() * o])
+        Vec3(self.0 * o)
     }
 }
 
 impl Mul<Vec3> for Vec3 {
     type Output = Vec3;
     fn mul(self, o: Vec3) -> Vec3 {
-        Vec3([self.x() * o.x(), self.y() * o.y(), self.z() * o.z()])
+        Vec3(self.0 * o.0)
     }
 }
 
@@ -190,7 +174,7 @@ impl Div<Vec3> for Vec3 {
     type Output = Vec3;
 
     fn div(self, o: Vec3) -> Vec3 {
-        Vec3([self.x() / o.x(), self.y() / o.y(), self.z() / o.z()])
+        Vec3(self.0 / o.0)
     }
 }
 
@@ -199,30 +183,16 @@ impl Div<f64> for Vec3 {
 
     fn div(self, o: f64) -> Vec3 {
         let o = 1.0 / o;
-        Vec3([self.x() * o, self.y() * o, self.z() * o])
+
+        Vec3(self.0 * o)
     }
 }
 
 impl DivAssign<f64> for Vec3 {
     fn div_assign(&mut self, o: f64) {
         let o = 1.0 / o;
-        self.0[0] *= o;
-        self.0[1] *= o;
-        self.0[2] *= o;
-    }
-}
 
-impl Index<usize> for Vec3 {
-    type Output = f64;
-
-    fn index(&self, q: usize) -> &f64 {
-        &self.0[q]
-    }
-}
-
-impl IndexMut<usize> for Vec3 {
-    fn index_mut(&mut self, q: usize) -> &mut f64 {
-        &mut self.0[q]
+        self.0 *= o
     }
 }
 

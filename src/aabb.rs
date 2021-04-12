@@ -11,23 +11,17 @@ impl Aabb {
         Self { min, max }
     }
 
-    pub fn hit(&self, ray: &Ray, mut t_min: f64, mut t_max: f64) -> bool {
-        for i in 0..=2 {
-            let inverse_dir = 1.0 / ray.direction[i];
-            let mut t0 = (self.min[i] - ray.origin[i]) * inverse_dir;
-            let mut t1 = (self.max[i] - ray.origin[i]) * inverse_dir;
-            if inverse_dir < 0.0 {
-                std::mem::swap(&mut t0, &mut t1);
-            }
-            t_min = if t0 > t_min { t0 } else { t_min };
-            t_max = if t1 < t_max { t1 } else { t_max };
+    pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
+        let min = (self.min - ray.origin) / ray.direction;
+        let max = (self.max - ray.origin) / ray.direction;
 
-            if t_max <= t_min {
-                return false;
-            }
-        }
+        let mins = min.min(max);
+        let maxs = min.max(max);
 
-        true
+        let tmin = mins.max_element(t_min);
+        let tmax = maxs.min_element(t_max);
+
+        tmax > tmin
     }
 
     pub fn surrounding_box(box0: Aabb, box1: Aabb) -> Self {

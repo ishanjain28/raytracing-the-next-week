@@ -6,6 +6,7 @@ version = "0.1.0"
 [dependencies]
 num-traits = "*"
 rayon = "1.5.0"
+packed_simd = { version = "0.3.4", package = "packed_simd_2" }
 
 [dependencies.image]
 default-features = false
