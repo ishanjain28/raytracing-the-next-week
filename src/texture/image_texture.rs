@@ -15,7 +15,7 @@ impl ImageTexture {
     #[allow(dead_code)]
     pub fn from_filename(filename: &str) -> Result<Self, ImageError> {
         let img = ImageReader::open(filename)?.decode()?;
-        let img = img.to_bgr8();
+        let img = img.to_rgb8();
 
         let (width, _) = img.dimensions();
 
@@ -48,9 +48,9 @@ impl Texture for ImageTexture {
         let pixel = (j * self.bytes_per_scanline + i * self.bytes_per_pixel) as usize;
 
         Vec3::new(
-            color_scale * (self.image[pixel + 2] as f64),
-            color_scale * (self.image[pixel + 1] as f64),
             color_scale * (self.image[pixel] as f64),
+            color_scale * (self.image[pixel + 1] as f64),
+            color_scale * (self.image[pixel + 2] as f64),
         )
     }
 }

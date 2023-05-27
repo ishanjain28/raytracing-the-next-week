@@ -23,7 +23,7 @@ impl Vec3 {
     }
 
     pub fn random<R: Rng + ?Sized>(rng: &mut R) -> Self {
-        Self(f64x4::from_slice_aligned(&rng.gen::<[f64; 4]>()))
+        Self(f64x4::from_slice_unaligned(&rng.gen::<[f64; 4]>()))
     }
 
     pub fn random_in_range<R: Rng + ?Sized>(rng: &mut R, range: RangeInclusive<f64>) -> Self {

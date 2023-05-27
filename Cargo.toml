@@ -3,6 +3,8 @@ authors = ["ishanjain28 <ishanjain28@gmail.com>"]
 edition = "2018"
 name = "rtnw"
 version = "0.1.0"
+
+
 [dependencies]
 num-traits = "*"
 rayon = "1.5.0"
@@ -11,15 +13,15 @@ packed_simd = { version = "0.3.4", package = "packed_simd_2" }
 [dependencies.image]
 default-features = false
 features = ["jpeg", "png"]
-version = "0.23.14"
+version = "0.24.6"
 
 [dependencies.rand]
 features = ["small_rng"]
-version = "0.8.3"
+version = "0.8.5"
 
 [dependencies.sdl2]
 optional = true
-version = "0.34.0"
+version = "0.35.2"
 
 [features]
 default = ["gui"]
