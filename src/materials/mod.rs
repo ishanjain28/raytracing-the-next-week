@@ -58,11 +58,19 @@ fn refract(incident: Vec3, normal: Vec3, ni_over_nt: f64) -> Option<Vec3> {
 }
 
 fn random_point_in_unit_sphere<R: Rng + ?Sized>(rng: &mut R) -> Vec3 {
-    let mut point = Vec3::random(rng) * 2.0 - Vec3::splat(1.0);
-    while point.sq_len() >= 1.0 {
-        point = Vec3::random(rng) * 2.0 - Vec3::splat(1.0);
-    }
-    point
+    let u: f64 = rng.gen();
+    let v: f64 = rng.gen();
+
+    let theta = u * 2.0 * std::f64::consts::PI;
+    let phi = (2.0 * v - 1.0).acos();
+
+    let radius = rng.gen::<f64>().cbrt();
+
+    let x = radius * phi.sin() * theta.cos();
+    let y = radius * phi.sin() * theta.sin();
+    let z = radius * phi.cos();
+
+    Vec3::new(x, y, z)
 }
 
 pub trait MaterialBuilder<T> {
