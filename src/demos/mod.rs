@@ -159,6 +159,7 @@ pub trait Demo: Send + Sync {
 
                     temp_offset += nx * 4;
                 }
+
                 println!("Rendered {}", chunk);
             });
         });
@@ -227,7 +228,7 @@ impl DemoWrapper {
     pub fn render(&self, buf: &mut Vec<u8>, x: usize, y: usize, samples: u16) {
         match self {
             DemoWrapper::HitableList(v) => v.render(buf, x, y, samples),
-            DemoWrapper::BVHNode(v) => v.save_as_ppm(buf, x, y, samples),
+            DemoWrapper::BVHNode(v) => v.render(buf, x, y, samples),
         }
     }
 }
